@@ -7,3 +7,5 @@ logs/
 
 target/
 
+*.png
+
