@@ -25,15 +25,14 @@ func msgWhiteList() []string {
 }
 
 const (
-	muteMinute = 10	// 禁言时间
-	maxRepeat = 2	// 最大复读次数
+	muteMinute      = 10 // 禁言时间
+	maxRepeat       = 2  // 最大复读次数
 	msgTraceBackNum = 10 // 复读消息追溯条数，只根据前 10 条判定是否复读
 )
 
-
 type noCopy struct {
-	Groups map[int64]*client.GroupInfo	// 动态更新群组信息，目前未启用
-	*sync.Mutex						// 群组信息更新互斥锁
+	Groups      map[int64]*client.GroupInfo // 动态更新群组信息，目前未启用
+	*sync.Mutex                             // 群组信息更新互斥锁
 	*groupMsg
 }
 
@@ -80,7 +79,7 @@ func (n *noCopy) doNotCopyAndRecall(qqClient *client.QQClient, m *message.GroupM
 	if in(msgWhiteList(), m.ToString()) {
 		return
 	}
-	if !n.isMsgRepeat(m.GroupCode, m.ToString()) {
+	if !n.isMsgRepeat(m.GroupCode, m.ToString(), strictCompare) {
 		return
 	}
 	if err := qqClient.RecallGroupMessage(m.GroupCode, m.Id, m.InternalId); err != nil {
@@ -94,7 +93,7 @@ func (n *noCopy) doNoCopyAndMute(client *client.QQClient, m *message.GroupMessag
 	if in(msgWhiteList(), m.ToString()) {
 		return
 	}
-	if !n.isMsgRepeat(m.GroupCode, m.ToString()) {
+	if !n.isMsgRepeat(m.GroupCode, m.ToString(), strictCompare) {
 		return
 	}
 
@@ -113,5 +112,3 @@ func (n *noCopy) doNoCopyAndMute(client *client.QQClient, m *message.GroupMessag
 		logger.Info("禁言失败", err)
 	}
 }
-
-

@@ -1,10 +1,10 @@
 package takeOut
 
 import (
-	"github.com/Mrs4s/MiraiGo/client"
-	"github.com/Mrs4s/MiraiGo/message"
 	"bird_qq_bot/bot"
 	"bird_qq_bot/utils"
+	"github.com/Mrs4s/MiraiGo/client"
+	"github.com/Mrs4s/MiraiGo/message"
 	"strconv"
 	"sync"
 )
@@ -47,10 +47,15 @@ func (t *takeOut) sendRandNum(qqClient *client.QQClient, m *message.GroupMessage
 	if m.ToString() != "外卖" {
 		return
 	}
-	msgElements := make([]message.IMessageElement, 0)
-	msgElements = append(msgElements, &message.AtElement{Target: m.Sender.Uin, SubType: message.AtTypeGroupMember})
+	msgSend := message.SendingMessage{}
 	msgText := "宝贝，你 roll 了个 " + strconv.Itoa(utils.GetOneRandNum(1, 101))
-	msgElements = append(msgElements, &message.TextElement{Content: msgText})
-	msgSend := message.SendingMessage{Elements: msgElements}
+	atDisplay := "@"
+	if m.Sender.CardName != "" {
+		atDisplay += m.Sender.CardName
+	} else {
+		atDisplay += m.Sender.Nickname
+	}
+	msgSend.Append(message.NewAt(m.Sender.Uin, atDisplay))
+	msgSend.Append(message.NewText(msgText))
 	qqClient.SendGroupMessage(m.GroupCode, &msgSend)
 }
