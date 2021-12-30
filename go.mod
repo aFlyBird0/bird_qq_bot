@@ -14,12 +14,16 @@ require (
 )
 
 require (
+	github.com/elazarl/goproxy v0.0.0-20211114080932-d06c3be7c11b // indirect
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lestrrat-go/strftime v1.0.4 // indirect
+	github.com/parnurzeal/gorequest v0.2.16
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
+	github.com/smartystreets/goconvey v1.7.2 // indirect
 	github.com/willf/bitset v1.2.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+	moul.io/http2curl v1.0.0 // indirect
 )
 
 replace github.com/willf/bitset v1.2.0 => github.com/bits-and-blooms/bitset v1.2.0
