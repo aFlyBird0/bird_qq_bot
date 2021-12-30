@@ -5,8 +5,6 @@ import (
 	"sync"
 )
 
-
-
 // 循环消息队列，记录最近的 msgTraceBackNum 条消息
 type groupMsg struct {
 	msgMap   map[int64][]string
@@ -60,7 +58,6 @@ type msgCompareFunc func(string, string) bool
 func strictCompare(msg1, msg2 string) bool {
 	return msg1 == msg2
 }
-
 
 func (n *noCopy) updateGroupMembers(c *client.QQClient) {
 	//n.Groups = make(map[int64]*client.GroupInfo)

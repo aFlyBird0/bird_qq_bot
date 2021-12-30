@@ -4,9 +4,9 @@ import (
 	"bird_qq_bot/bot"
 	"sync"
 
+	"bird_qq_bot/utils"
 	"github.com/Mrs4s/MiraiGo/client"
 	"github.com/Mrs4s/MiraiGo/message"
-	"bird_qq_bot/utils"
 )
 
 func init() {

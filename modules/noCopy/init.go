@@ -21,6 +21,7 @@ func msgWhiteList() []string {
 	return []string{
 		"外卖",
 		"嗯嗯",
+		"宝贝",
 	}
 }
 
@@ -74,7 +75,6 @@ func (n *noCopy) Stop(b *bot.Bot, wg *sync.WaitGroup) {
 
 // 判断群消息是否是复读，如果是，则撤回
 func (n *noCopy) doNotCopyAndRecall(qqClient *client.QQClient, m *message.GroupMessage) {
-	logger.Info(m.ToString())
 	// 若消息在白名单内，不触发复读判定
 	if in(msgWhiteList(), m.ToString()) {
 		return
@@ -82,6 +82,7 @@ func (n *noCopy) doNotCopyAndRecall(qqClient *client.QQClient, m *message.GroupM
 	if !n.isMsgRepeat(m.GroupCode, m.ToString(), strictCompare) {
 		return
 	}
+	logger.Info(m.ToString())
 	if err := qqClient.RecallGroupMessage(m.GroupCode, m.Id, m.InternalId); err != nil {
 		logger.Info("群组消息撤回失败", err)
 	}
