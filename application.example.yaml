@@ -1,3 +1,5 @@
 bot:
   account: 123456789
   password: 123456789
+ci:
+  webhook:

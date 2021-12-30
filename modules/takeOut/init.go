@@ -5,6 +5,7 @@ import (
 	"bird_qq_bot/utils"
 	"github.com/Mrs4s/MiraiGo/client"
 	"github.com/Mrs4s/MiraiGo/message"
+	"github.com/sirupsen/logrus"
 	"strconv"
 	"sync"
 )
@@ -12,12 +13,15 @@ import (
 func init() {
 	instance = &takeOut{}
 	bot.RegisterModule(instance)
+	logger = utils.GetModuleLogger(instance.GetModuleInfo().String())
 }
 
 type takeOut struct {
 }
 
 var instance *takeOut
+
+var logger *logrus.Entry
 
 func (t *takeOut) GetModuleInfo() bot.ModuleInfo {
 	return bot.ModuleInfo{
@@ -55,6 +59,7 @@ func (t *takeOut) sendRandNum(qqClient *client.QQClient, m *message.GroupMessage
 	} else {
 		atDisplay += m.Sender.Nickname
 	}
+	logger.Infof("收到 %v ：%v 的外卖指令", m.Sender.Uin, atDisplay)
 	msgSend.Append(message.NewAt(m.Sender.Uin, atDisplay))
 	msgSend.Append(message.NewText(msgText))
 	qqClient.SendGroupMessage(m.GroupCode, &msgSend)

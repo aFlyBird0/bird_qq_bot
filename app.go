@@ -1,16 +1,18 @@
 package main
 
 import (
+	"bird_qq_bot/bot"
 	"fmt"
 	"os"
 	"os/signal"
-	"bird_qq_bot/bot"
 
 	"bird_qq_bot/config"
 	"bird_qq_bot/utils"
 
 	_ "bird_qq_bot/modules/logging"
 	_ "bird_qq_bot/modules/noCopy"
+	_ "bird_qq_bot/modules/pong"
+	_ "bird_qq_bot/modules/restart"
 	_ "bird_qq_bot/modules/takeOut"
 )
 
