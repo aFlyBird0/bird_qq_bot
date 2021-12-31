@@ -6,6 +6,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/sirupsen/logrus"
+	"strings"
 	"sync"
 	"time"
 )
@@ -75,14 +76,18 @@ func (n *noCopy) Stop(b *bot.Bot, wg *sync.WaitGroup) {
 
 // 判断群消息是否是复读，如果是，则撤回
 func (n *noCopy) doNotCopyAndRecall(qqClient *client.QQClient, m *message.GroupMessage) {
+	msg := NewGroupMessageWrapper(m).ToString()
+	if strings.TrimSpace(msg) == "" {
+		return
+	}
 	// 若消息在白名单内，不触发复读判定
-	if in(msgWhiteList(), m.ToString()) {
+	if in(msgWhiteList(), msg) {
 		return
 	}
-	if !n.isMsgRepeat(m.GroupCode, m.ToString(), strictCompare) {
+	if !n.isMsgRepeat(m.GroupCode, msg, strictCompare) {
 		return
 	}
-	logger.Info(m.ToString())
+	logger.Infof("群：%v %v: %v 复读了：%v", m.GroupCode, m.Sender.Uin, m.Sender.Nickname, msg)
 	if err := qqClient.RecallGroupMessage(m.GroupCode, m.Id, m.InternalId); err != nil {
 		logger.Info("群组消息撤回失败", err)
 	}
@@ -90,11 +95,12 @@ func (n *noCopy) doNotCopyAndRecall(qqClient *client.QQClient, m *message.GroupM
 
 // 判断群消息是否是复读，如果是，则禁言
 func (n *noCopy) doNoCopyAndMute(client *client.QQClient, m *message.GroupMessage) {
-	logger.Info(m.ToString())
-	if in(msgWhiteList(), m.ToString()) {
+	msg := NewGroupMessageWrapper(m).ToString()
+	logger.Info(msg)
+	if in(msgWhiteList(), msg) {
 		return
 	}
-	if !n.isMsgRepeat(m.GroupCode, m.ToString(), strictCompare) {
+	if !n.isMsgRepeat(m.GroupCode, msg, strictCompare) {
 		return
 	}
 

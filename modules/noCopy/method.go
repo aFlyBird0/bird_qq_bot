@@ -2,6 +2,8 @@ package noCopy
 
 import (
 	"github.com/Mrs4s/MiraiGo/client"
+	"github.com/Mrs4s/MiraiGo/message"
+	"strconv"
 	"sync"
 )
 
@@ -57,6 +59,37 @@ type msgCompareFunc func(string, string) bool
 // 严格对比
 func strictCompare(msg1, msg2 string) bool {
 	return msg1 == msg2
+}
+
+// GroupMessageWrapper 包装一层 GroupMessage， 为了重写 ToString 方法
+type GroupMessageWrapper struct {
+	*message.GroupMessage
+}
+
+func NewGroupMessageWrapper(msg *message.GroupMessage) *GroupMessageWrapper {
+	return &GroupMessageWrapper{msg}
+}
+
+func (msg *GroupMessageWrapper) ToString() (res string) {
+	for _, elem := range msg.Elements {
+		switch e := elem.(type) {
+		case *message.TextElement:
+			res += e.Content
+		case *message.FaceElement:
+			res += "[" + e.Name + "]"
+		case *message.MarketFaceElement:
+			res += "[" + e.Name + "]"
+		case *message.GroupImageElement:
+			res += "[Image: " + e.ImageId + "]"
+		case *message.AtElement:
+			res += e.Display
+		case *message.RedBagElement:
+			res += "[RedBag:" + e.Title + "]"
+		case *message.ReplyElement:
+			res += "[Reply:" + strconv.FormatInt(int64(e.ReplySeq), 10) + "]"
+		}
+	}
+	return
 }
 
 func (n *noCopy) updateGroupMembers(c *client.QQClient) {
