@@ -23,6 +23,7 @@ func msgWhiteList() []string {
 		"外卖",
 		"嗯嗯",
 		"宝贝",
+		"开枪",
 	}
 }
 
