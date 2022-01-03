@@ -1,7 +1,9 @@
 package bot
 
 import (
+	"bird_qq_bot/config"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -52,6 +54,16 @@ func RegisterModule(instance Module) {
 	//if val := mod.Instance; val == nil {
 	//	panic("ModuleInfo.Instance must return a non-nil module instance")
 	//}
+
+	// 如果开启了 enableByConfig, 就依次检查子模块的 enable 是否为 true，否就不加载
+	if config.GlobalConfig.GetBool("module.enableByConfig") {
+		if !config.GlobalConfig.GetBool("module.enable." + mod.ID.String()) {
+			logrus.WithField("internal", "module").Info("module " + mod.ID.String() + " disabled by config")
+			return
+		} else {
+			logrus.WithField("internal", "module").Info("module " + mod.ID.String() + " enabled")
+		}
+	}
 
 	modulesMu.Lock()
 	defer modulesMu.Unlock()

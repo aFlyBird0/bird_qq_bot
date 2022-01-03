@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 
-	"bird_qq_bot/config"
 	"bird_qq_bot/utils"
 
 	_ "bird_qq_bot/modules/logging"
@@ -19,7 +18,7 @@ import (
 
 func init() {
 	utils.WriteLogToFS()
-	config.Init()
+	//config.Init()
 }
 
 func main() {

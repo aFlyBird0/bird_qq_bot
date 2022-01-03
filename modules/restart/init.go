@@ -23,6 +23,11 @@ var instance *restart
 var logger *logrus.Entry
 
 type restart struct {
+	mConfig
+}
+
+type mConfig struct {
+	allows     []int64
 	webhookUrl string
 }
 
@@ -33,8 +38,17 @@ func (r *restart) GetModuleInfo() bot.ModuleInfo {
 	}
 }
 
+func (r *restart) InitModuleConfig() {
+	allows := config.GlobalConfig.GetIntSlice("modules." + r.GetModuleInfo().ID.String() + ".allows")
+	r.allows = make([]int64, len(allows))
+	for i, v := range allows {
+		r.allows[i] = int64(v)
+	}
+	r.webhookUrl = config.GlobalConfig.GetString("modules." + r.GetModuleInfo().ID.String() + ".webhook")
+}
+
 func (r *restart) Init() {
-	r.webhookUrl = config.GlobalConfig.GetString("ci.webhook")
+	r.InitModuleConfig()
 }
 
 func (r *restart) PostInit() {
@@ -52,9 +66,11 @@ func (r *restart) Stop(b *bot.Bot, wg *sync.WaitGroup) {
 }
 
 func (r *restart) restartByWebHook(c *client.QQClient, m *message.PrivateMessage) {
+	// todo 把触发词和权限控制写到 bot(server) 层中
 	if m.ToString() == "#重启" {
-		c.SendPrivateMessage(m.Sender.Uin, message.NewSendingMessage().Append(message.NewText("收到重启信号，准备重启")))
+		if utils.InInt64(m.Sender.Uin, r.allows) {
+			c.SendPrivateMessage(m.Sender.Uin, message.NewSendingMessage().Append(message.NewText("收到重启信号，准备重启")))
+			logger.Info(gorequest.New().Timeout(time.Second * 10).Get(r.webhookUrl).End())
+		}
 	}
-	logger.Info(r.webhookUrl)
-	logger.Info(gorequest.New().Timeout(time.Second * 10).Get(r.webhookUrl).End())
 }

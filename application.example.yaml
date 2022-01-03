@@ -1,5 +1,33 @@
 bot:
-  account: 123456789
-  password: 123456789
-ci:
-  webhook:
+  account: 123456789 # bot QQ号
+  password: 123456789 # bot QQ密码
+
+# 模块全局配置
+module:
+  # 是否根据配置文件启用模块，与 app.go 中的 import _ 是 「逻辑与」关系
+  # 即，如果为 true，需要 import _ 和 模块的 enable 值同为 true 的时候，才生效
+  enableByConfig: true
+  # 是否启用各个子模块，当 enableByConfig 为 true 时，此值才生效
+  enable:
+    internal.logging: true  # 日志模块，必须开启
+    bird.loveMsg: true      # 情话模块
+    bird.noCopy: true       # 防复读
+    bird.pong: true         # 心跳模块
+    bird.takeOut: true      # 外卖模块，包含roll点与随机@
+    # 以下模块是我服务器的专属功能，不建议开启
+    bird.restart: false      # 重启模块
+
+# 子模块个性化配置
+modules:
+  internal.logging:   # 日志模块
+  bird.loveMsg:       # 情话模块
+  bird.noCopy:        # 防复读
+  bird.pong:          # 心跳模块
+    allows:
+      - 123456789
+  bird.takeOut:       # 外卖模块，包含roll点与随机@
+  bird.restart:       # 重启模块
+    webhook:
+    allows:
+      - 123456789
+
