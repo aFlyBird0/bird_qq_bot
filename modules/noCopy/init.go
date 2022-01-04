@@ -2,6 +2,7 @@ package noCopy
 
 import (
 	"bird_qq_bot/bot"
+	"bird_qq_bot/config"
 	"bird_qq_bot/utils"
 	"github.com/Mrs4s/MiraiGo/client"
 	"github.com/Mrs4s/MiraiGo/message"
@@ -17,16 +18,6 @@ func init() {
 	logger = utils.GetModuleLogger(instance.GetModuleInfo().String())
 }
 
-// 复读白名单
-func msgWhiteList() []string {
-	return []string{
-		"外卖",
-		"嗯嗯",
-		"宝贝",
-		"开枪",
-	}
-}
-
 const (
 	muteMinute      = 10 // 禁言时间
 	maxRepeat       = 2  // 最大复读次数
@@ -37,6 +28,16 @@ type noCopy struct {
 	Groups      map[int64]*client.GroupInfo // 动态更新群组信息，目前未启用
 	*sync.Mutex                             // 群组信息更新互斥锁
 	*groupMsg
+	*mConfig
+}
+
+type mConfig struct {
+	whiteListWord []string
+}
+
+func (n *noCopy) InitModuleConfig() {
+	n.mConfig = &mConfig{}
+	n.whiteListWord = config.GlobalConfig.GetStringSlice("modules." + n.GetModuleInfo().String() + ".whiteListWord")
 }
 
 var instance *noCopy
@@ -53,6 +54,7 @@ func (n *noCopy) GetModuleInfo() bot.ModuleInfo {
 func (n *noCopy) Init() {
 	n.Groups = make(map[int64]*client.GroupInfo)
 	n.groupMsg = NewGroupMsg()
+	n.InitModuleConfig()
 }
 
 func (n *noCopy) PostInit() {
@@ -82,7 +84,7 @@ func (n *noCopy) doNotCopyAndRecall(qqClient *client.QQClient, m *message.GroupM
 		return
 	}
 	// 若消息在白名单内，不触发复读判定
-	if in(msgWhiteList(), msg) {
+	if utils.InString(msg, n.whiteListWord) {
 		return
 	}
 	if !n.isMsgRepeat(m.GroupCode, msg, strictCompare) {
@@ -98,7 +100,7 @@ func (n *noCopy) doNotCopyAndRecall(qqClient *client.QQClient, m *message.GroupM
 func (n *noCopy) doNoCopyAndMute(client *client.QQClient, m *message.GroupMessage) {
 	msg := NewGroupMessageWrapper(m).ToString()
 	logger.Info(msg)
-	if in(msgWhiteList(), msg) {
+	if utils.InString(msg, n.whiteListWord) {
 		return
 	}
 	if !n.isMsgRepeat(m.GroupCode, msg, strictCompare) {

@@ -17,3 +17,12 @@ func InInt(e int, s []int) bool {
 	}
 	return false
 }
+
+func InString(e string, s []string) bool {
+	for _, v := range s {
+		if v == e {
+			return true
+		}
+	}
+	return false
+}

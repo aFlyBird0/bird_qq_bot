@@ -22,6 +22,11 @@ modules:
   internal.logging:   # 日志模块
   bird.loveMsg:       # 情话模块
   bird.noCopy:        # 防复读
+    whiteListWord: # 防复读白名单，应当加入所有指令
+      - "外卖"
+      - "宝贝"
+      - "嗯嗯"
+      - "开枪"
   bird.pong:          # 心跳模块
     allows:
       - 123456789
