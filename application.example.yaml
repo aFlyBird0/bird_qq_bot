@@ -15,8 +15,8 @@ module:
     bird.pong: true         # 心跳模块
     bird.takeOut: true      # 外卖模块，包含roll点与随机@
     # 以下模块是我服务器的专属功能，不建议开启
-    bird.restart: false      # 重启模块
-    bird.goodNight: false    # 晚安模块，需要申请 apiKey，见模块详细配置
+    bird.restart: false     # 重启模块
+    bird.goodNight: false   # 晚安模块，需要申请 apiKey，见模块详细配置
 
 # 子模块个性化配置
 modules:

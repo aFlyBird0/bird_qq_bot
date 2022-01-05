@@ -21,7 +21,7 @@ var instance *goodNight
 var logger *logrus.Entry
 
 type goodNight struct {
-	*mConfig
+	mConfig
 }
 
 type mConfig struct {
@@ -29,7 +29,6 @@ type mConfig struct {
 }
 
 func (g *goodNight) InitModuleConfig() {
-	g.mConfig = &mConfig{}
 	g.apiKey = config.GlobalConfig.GetString("modules." + g.GetModuleInfo().String() + ".apiKey")
 }
 

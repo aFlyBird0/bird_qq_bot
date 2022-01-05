@@ -28,7 +28,7 @@ type noCopy struct {
 	Groups      map[int64]*client.GroupInfo // 动态更新群组信息，目前未启用
 	*sync.Mutex                             // 群组信息更新互斥锁
 	*groupMsg
-	*mConfig
+	mConfig
 }
 
 type mConfig struct {
@@ -36,7 +36,6 @@ type mConfig struct {
 }
 
 func (n *noCopy) InitModuleConfig() {
-	n.mConfig = &mConfig{}
 	n.whiteListWord = config.GlobalConfig.GetStringSlice("modules." + n.GetModuleInfo().String() + ".whiteListWord")
 }
 
