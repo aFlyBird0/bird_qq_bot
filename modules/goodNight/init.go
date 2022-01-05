@@ -2,7 +2,6 @@ package goodNight
 
 import (
 	"bird_qq_bot/bot"
-	"bird_qq_bot/config"
 	"bird_qq_bot/utils"
 	"github.com/Mrs4s/MiraiGo/client"
 	"github.com/Mrs4s/MiraiGo/message"
@@ -25,11 +24,13 @@ type goodNight struct {
 }
 
 type mConfig struct {
-	apiKey string
+	apiKey   string
+	triggers []string
 }
 
 func (g *goodNight) InitModuleConfig() {
-	g.apiKey = config.GlobalConfig.GetString("modules." + g.GetModuleInfo().String() + ".apiKey")
+	g.apiKey = bot.GetModConfigString(g, "apiKey")
+	g.triggers = bot.GetModConfigStringSlice(g, "triggers")
 }
 
 func (g *goodNight) GetModuleInfo() bot.ModuleInfo {
@@ -47,7 +48,7 @@ func (g *goodNight) PostInit() {
 }
 
 func (g *goodNight) Serve(b *bot.Bot) {
-	b.OnGroupMessage(g.sendNightMsg)
+	b.OnGroupMsgAuth(g.sendNightMsg, &bot.GroupAllowMsgF{Allows: g.triggers})
 }
 
 func (g *goodNight) Start(b *bot.Bot) {
@@ -58,9 +59,6 @@ func (g *goodNight) Stop(b *bot.Bot, wg *sync.WaitGroup) {
 }
 
 func (g *goodNight) sendNightMsg(qqClient *client.QQClient, m *message.GroupMessage) {
-	if m.ToString() != "晚安" {
-		return
-	}
 	msgSend := message.SendingMessage{}
 	atDisplay := "@"
 	if m.Sender.CardName != "" {

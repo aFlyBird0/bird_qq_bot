@@ -23,6 +23,15 @@ var logger *logrus.Entry
 
 type randAt struct {
 	botUin int64 //机器人自己的账号
+	mConfig
+}
+
+type mConfig struct {
+	triggers []string //触发词
+}
+
+func (r *randAt) InitModuleConfig() {
+	r.triggers = bot.GetModConfigStringSlice(r, "triggers")
 }
 
 func (r *randAt) GetModuleInfo() bot.ModuleInfo {
@@ -34,13 +43,14 @@ func (r *randAt) GetModuleInfo() bot.ModuleInfo {
 
 func (r *randAt) Init() {
 	r.botUin = config.GlobalConfig.GetInt64("bot.account")
+	r.InitModuleConfig()
 }
 
 func (r *randAt) PostInit() {
 }
 
 func (r *randAt) Serve(b *bot.Bot) {
-	b.OnGroupMessage(r.randAtMember)
+	b.OnGroupMsgAuth(r.randAtMember, &bot.GroupAllowMsgF{Allows: r.triggers})
 }
 
 func (r *randAt) Start(b *bot.Bot) {
@@ -52,9 +62,6 @@ func (r *randAt) Stop(b *bot.Bot, wg *sync.WaitGroup) {
 
 // 随机@ 群成员，忽略自己
 func (r *randAt) randAtMember(qqClient *client.QQClient, m *message.GroupMessage) {
-	if m.ToString() != "开枪" {
-		return
-	}
 	strconv.Itoa(utils.GetOneRandNum(1, 101))
 	msgSend := message.SendingMessage{}
 

@@ -22,12 +22,17 @@ var instance *loveMsg
 var logger *logrus.Entry
 
 type loveMsg struct {
+	mConfig
 }
 
 type apiResp struct {
 	Success bool   `json:"success"`
 	ID      int64  `json:"id"`
 	Msg     string `json:"ishan"`
+}
+
+type mConfig struct {
+	triggers []string
 }
 
 const loveMsgApiUrl = "https://api.vvhan.com/api/love?type=json"
@@ -40,14 +45,14 @@ func (l *loveMsg) GetModuleInfo() bot.ModuleInfo {
 }
 
 func (l *loveMsg) Init() {
-
+	l.triggers = bot.GetModConfigStringSlice(l, "triggers")
 }
 
 func (l *loveMsg) PostInit() {
 }
 
 func (l *loveMsg) Serve(b *bot.Bot) {
-	b.OnGroupMessage(l.sendLoveMsg)
+	b.OnGroupMsgAuth(l.sendLoveMsg, &bot.GroupAllowMsgF{Allows: l.triggers})
 }
 
 func (l *loveMsg) Start(b *bot.Bot) {
@@ -58,9 +63,6 @@ func (l *loveMsg) Stop(b *bot.Bot, wg *sync.WaitGroup) {
 }
 
 func (l *loveMsg) sendLoveMsg(qqClient *client.QQClient, m *message.GroupMessage) {
-	if m.ToString() != "宝贝" {
-		return
-	}
 	msgSend := message.SendingMessage{}
 	atDisplay := "@"
 	if m.Sender.CardName != "" {

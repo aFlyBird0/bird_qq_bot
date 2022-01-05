@@ -2,12 +2,10 @@ package noCopy
 
 import (
 	"bird_qq_bot/bot"
-	"bird_qq_bot/config"
 	"bird_qq_bot/utils"
 	"github.com/Mrs4s/MiraiGo/client"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/sirupsen/logrus"
-	"strings"
 	"sync"
 	"time"
 )
@@ -36,7 +34,7 @@ type mConfig struct {
 }
 
 func (n *noCopy) InitModuleConfig() {
-	n.whiteListWord = config.GlobalConfig.GetStringSlice("modules." + n.GetModuleInfo().String() + ".whiteListWord")
+	n.whiteListWord = bot.GetModConfigStringSlice(n, "whiteListWord")
 }
 
 var instance *noCopy
@@ -60,9 +58,7 @@ func (n *noCopy) PostInit() {
 }
 
 func (n *noCopy) Serve(b *bot.Bot) {
-	//n.updateGroupMembers(b.QQClient)
-	//b.OnGroupMessage(n.doNoCopyAndMute)
-	b.OnGroupMessage(n.doNotCopyAndRecall)
+	b.OnGroupMsgAuth(n.doNotCopyAndRecall, &bot.GroupBanMsgF{Bans: n.whiteListWord}, &bot.GroupBanEmptyMsgF{})
 }
 
 func (n *noCopy) Start(b *bot.Bot) {
@@ -79,13 +75,6 @@ func (n *noCopy) Stop(b *bot.Bot, wg *sync.WaitGroup) {
 // 判断群消息是否是复读，如果是，则撤回
 func (n *noCopy) doNotCopyAndRecall(qqClient *client.QQClient, m *message.GroupMessage) {
 	msg := NewGroupMessageWrapper(m).ToString()
-	if strings.TrimSpace(msg) == "" {
-		return
-	}
-	// 若消息在白名单内，不触发复读判定
-	if utils.InString(msg, n.whiteListWord) {
-		return
-	}
 	if !n.isMsgRepeat(m.GroupCode, msg, strictCompare) {
 		return
 	}
@@ -98,10 +87,6 @@ func (n *noCopy) doNotCopyAndRecall(qqClient *client.QQClient, m *message.GroupM
 // 判断群消息是否是复读，如果是，则禁言
 func (n *noCopy) doNoCopyAndMute(client *client.QQClient, m *message.GroupMessage) {
 	msg := NewGroupMessageWrapper(m).ToString()
-	logger.Info(msg)
-	if utils.InString(msg, n.whiteListWord) {
-		return
-	}
 	if !n.isMsgRepeat(m.GroupCode, msg, strictCompare) {
 		return
 	}

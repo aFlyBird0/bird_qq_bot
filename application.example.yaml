@@ -14,6 +14,7 @@ module:
     bird.noCopy: true       # 防复读
     bird.pong: true         # 心跳模块
     bird.takeOut: true      # 外卖模块，包含roll点与随机@
+    bird.randAt: true       # 随机@模块
     # 以下模块是我服务器的专属功能，不建议开启
     bird.restart: false     # 重启模块
     bird.goodNight: false   # 晚安模块，需要申请 apiKey，见模块详细配置
@@ -22,6 +23,8 @@ module:
 modules:
   internal.logging:   # 日志模块
   bird.loveMsg:       # 情话模块
+    triggers:
+      - "宝贝"
   bird.noCopy:        # 防复读
     whiteListWord: # 防复读白名单，应当加入所有指令
       - "外卖"
@@ -30,12 +33,24 @@ modules:
       - "开枪"
       - "晚安"
   bird.pong:          # 心跳模块
+    triggers:
+      - "#ping"
     allows:
       - 123456789
-  bird.takeOut:       # 外卖模块，包含roll点与随机@
+  bird.takeOut:       # 外卖模块
+    triggers:
+      - "外卖"
   bird.restart:       # 重启模块
+    triggers:
+      - "#重启"
     webhook:
     allows:
       - 123456789
   bird.goodNight:     # 晚安模块
+    triggers:
+      - "晚安"
     apiKey: xxxxxxxxxxx # https://www.tianapi.com/apiview/142 需要申请 apiKey
+  bird.randAt: # 随机@模块
+    triggers:
+      - "开枪"
+      - "随机@"

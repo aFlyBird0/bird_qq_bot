@@ -17,6 +17,11 @@ var instance *pong
 
 type pong struct {
 	startTime time.Time
+	mConfig
+}
+
+type mConfig struct {
+	triggers []string
 }
 
 func (p *pong) GetModuleInfo() bot.ModuleInfo {
@@ -28,13 +33,14 @@ func (p *pong) GetModuleInfo() bot.ModuleInfo {
 
 func (p *pong) Init() {
 	p.startTime = time.Now()
+	p.triggers = bot.GetModConfigStringSlice(p, "triggers")
 }
 
 func (p *pong) PostInit() {
 }
 
 func (p *pong) Serve(b *bot.Bot) {
-	b.OnPrivateMessage(p.sendPong)
+	b.OnPrivateMsgAuth(p.sendPong, &bot.PrivateAllowMsgF{Allows: p.triggers})
 }
 
 func (p *pong) Start(b *bot.Bot) {
@@ -45,8 +51,6 @@ func (p *pong) Stop(b *bot.Bot, wg *sync.WaitGroup) {
 }
 
 func (p *pong) sendPong(c *client.QQClient, m *message.PrivateMessage) {
-	if m.ToString() == "#ping" {
-		msg := "pong " + p.startTime.Format("2006-01-02 15:04:05")
-		c.SendPrivateMessage(m.Sender.Uin, message.NewSendingMessage().Append(message.NewText(msg)))
-	}
+	msg := "pong " + p.startTime.Format("2006-01-02 15:04:05")
+	c.SendPrivateMessage(m.Sender.Uin, message.NewSendingMessage().Append(message.NewText(msg)))
 }

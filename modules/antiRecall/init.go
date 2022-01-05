@@ -2,7 +2,6 @@ package antiRecall
 
 import (
 	"bird_qq_bot/bot"
-	"bird_qq_bot/config"
 	"bird_qq_bot/utils"
 	"github.com/Mrs4s/MiraiGo/client"
 	"sync"
@@ -31,11 +30,7 @@ func (a *antiRecall) GetModuleInfo() bot.ModuleInfo {
 }
 
 func (a *antiRecall) InitModuleConfig() {
-	allows := config.GlobalConfig.GetIntSlice("modules." + a.GetModuleInfo().ID.String() + ".allowGroups")
-	a.allowGroups = make([]int64, len(allows))
-	for i, v := range allows {
-		a.allowGroups[i] = int64(v)
-	}
+	a.allowGroups = bot.GetModConfigInt64Slice(a, "allowGroups")
 }
 
 func (a *antiRecall) Init() {
