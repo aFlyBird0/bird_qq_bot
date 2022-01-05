@@ -13,6 +13,7 @@ import (
 	_ "bird_qq_bot/modules/loveMsg"
 	_ "bird_qq_bot/modules/noCopy"
 	_ "bird_qq_bot/modules/pong"
+	_ "bird_qq_bot/modules/randAt"
 	_ "bird_qq_bot/modules/restart"
 	_ "bird_qq_bot/modules/takeOut"
 )
