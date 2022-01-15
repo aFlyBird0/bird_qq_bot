@@ -12,7 +12,7 @@ module:
     internal.logging: true  # 日志模块，必须开启
     bird.loveMsg: true      # 情话模块
     bird.noCopy: true       # 防复读
-    bird.pong: true         # 心跳模块
+    bird.pong: true         # 存活确认模块
     bird.takeOut: true      # 外卖模块，包含roll点与随机@
     bird.randAt: true       # 随机@模块
     # 以下模块是我服务器的专属功能，不建议开启
@@ -27,7 +27,9 @@ modules:
   bird.noCopy:        # 防复读
     # 防复读白名单，应当加入所有指令
     whiteListWord: ["外卖", "宝贝", "嗯嗯", "开枪", "晚安"]
-  bird.pong:          # 心跳模块
+    banGroups: [123456789] # 关闭防复读的群
+    whiteListQQ: [123456789]    # 不受防复读限制的QQ号
+  bird.pong:          # 存活确认模块
     triggers: ["#ping"]
     allows:
       - 123456789

@@ -31,10 +31,14 @@ type noCopy struct {
 
 type mConfig struct {
 	whiteListWord []string
+	banGroups     []int64
+	whiteListQQ   []int64
 }
 
 func (n *noCopy) InitModuleConfig() {
 	n.whiteListWord = bot.GetModConfigStringSlice(n, "whiteListWord")
+	n.banGroups = bot.GetModConfigInt64Slice(n, "banGroups")
+	n.whiteListQQ = bot.GetModConfigInt64Slice(n, "whiteListQQ")
 }
 
 var instance *noCopy
@@ -58,7 +62,12 @@ func (n *noCopy) PostInit() {
 }
 
 func (n *noCopy) Serve(b *bot.Bot) {
-	b.OnGroupMsgAuth(n.doNotCopyAndRecall, &bot.GroupBanMsgF{Bans: n.whiteListWord}, &bot.GroupBanEmptyMsgF{})
+	filters := make([]bot.OnGroupMsgFilter, 0, 3)
+	filters = append(filters, &bot.GroupBanMsgF{Bans: n.whiteListWord})
+	filters = append(filters, &bot.GroupBanEmptyMsgF{})
+	filters = append(filters, &bot.GroupBanGroupCodeF{Bans: n.banGroups})
+	filters = append(filters, &bot.GroupBanUinF{Bans: n.whiteListQQ})
+	b.OnGroupMsgAuth(n.doNotCopyAndRecall, filters...)
 }
 
 func (n *noCopy) Start(b *bot.Bot) {
