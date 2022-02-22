@@ -50,6 +50,9 @@ func (m *kaoyanScore) Serve(c *bot.Bot) {
 	time.AfterFunc(time.Second*9, func() {
 		m.updateAdminList(c.QQClient)
 	})
+	time.AfterFunc(time.Second*10, func() {
+		m.FindInvalidCardName(c.QQClient)
+	})
 	filters := make([]bot.OnGroupMsgFilter, 0, 3)
 	filters = append(filters, &bot.GroupAllowMsgF{Allows: m.triggers})
 	filters = append(filters, &bot.GroupAllowGroupCodeF{Allows: m.AllowGroupList})
