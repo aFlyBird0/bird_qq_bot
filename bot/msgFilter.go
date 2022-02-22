@@ -95,6 +95,14 @@ func (g *GroupBanGroupCodeF) CanAccess(groupMessage *message.GroupMessage) bool 
 	return !utils.InInt64(groupMessage.GroupCode, g.Bans)
 }
 
+type GroupAllowUinF struct {
+	Allows []int64
+}
+
+func (g *GroupAllowUinF) CanAccess(groupMessage *message.GroupMessage) bool {
+	return utils.InInt64(groupMessage.Sender.Uin, g.Allows)
+}
+
 type GroupBanUinF struct {
 	Bans []int64
 }

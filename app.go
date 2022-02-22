@@ -9,6 +9,7 @@ import (
 	"bird_qq_bot/utils"
 
 	_ "bird_qq_bot/modules/goodNight"
+	_ "bird_qq_bot/modules/kaoyanScore"
 	_ "bird_qq_bot/modules/logging"
 	_ "bird_qq_bot/modules/loveMsg"
 	_ "bird_qq_bot/modules/noCopy"
