@@ -35,8 +35,10 @@ func (m *kaoyanScore) Calculate(c *client.QQClient) {
 				counts += v.Len()
 			}
 			msg += fmt.Sprintf("%s(共%v个分数)\n", typ, counts)
+			sum := 0 // 每段依次累加人数
 			for _, scoreGroup := range scoreGroups {
-				msg += fmt.Sprintf("%v: %v人\n", scoreGroup.Describe(), scoreGroup.Len())
+				sum += scoreGroup.Len()
+				msg += fmt.Sprintf("%v: %v人(累计%v)\n", scoreGroup.Describe(), scoreGroup.Len(), sum)
 			}
 		}
 		msg += "以上结果通过群名片分析而得，存在一定误差，如误识别实验室门牌号为考研分数，仅供参考。\n"
