@@ -51,6 +51,11 @@ func (m *kaoyanScore) Serve(c *bot.Bot) {
 		m.updateAdminList(c.QQClient)
 	})
 	//time.AfterFunc(time.Second*10, func() {
+	//	// 找到所有计算机学硕学生，并拼接邮件群发的收件人字段
+	//	mailsTo := GenMailsFromUins(m.FindCSAcademicStudent(c.QQClient))
+	//	fmt.Println(mailsTo)
+	//})
+	//time.AfterFunc(time.Second*10, func() {
 	//	m.FindInvalidCardName(c.QQClient)
 	//})
 	filters := make([]bot.OnGroupMsgFilter, 0, 3)

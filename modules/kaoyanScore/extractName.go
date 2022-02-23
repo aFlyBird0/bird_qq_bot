@@ -95,3 +95,45 @@ func (m *kaoyanScore) FindInvalidCardName(c *client.QQClient) {
 		}
 	}
 }
+
+// FindCSAcademicStudent 找到群内的计算机学硕学生
+func (m *kaoyanScore) FindCSAcademicStudent(c *client.QQClient) []UinCardName {
+	if err := c.ReloadGroupList(); err != nil {
+		logger.Errorf("ReloadGroupList error: %v", err)
+	}
+	cardsMap := make(map[int64][]UinCardName)
+	for _, group := range c.GroupList {
+		// 只筛查需要统计的群
+		if !utils.InInt64(group.Code, m.AllowGroupList) {
+			continue
+		}
+		cardsOneGroup := make([]UinCardName, 0)
+		for _, member := range group.Members {
+			if member.CardName != "" {
+				cardsOneGroup = append(cardsOneGroup, UinCardName{Uin: member.Uin, CardName: member.CardName})
+			}
+		}
+		cardsMap[group.Code] = cardsOneGroup
+	}
+	var csAcademicStudent []UinCardName
+	filter := CSAcademicFilter{}
+	for _, cards := range cardsMap {
+		for _, card := range cards {
+			if filter.Filter(card.CardName) {
+				csAcademicStudent = append(csAcademicStudent, UinCardName{Uin: card.Uin, CardName: card.CardName})
+			}
+		}
+	}
+	return csAcademicStudent
+}
+
+// GenMailsFromUins 通过群名片生成群发邮箱收件人
+func GenMailsFromUins(uins []UinCardName) (mails string) {
+	mailSlice := make([]string, 0, len(uins))
+	for _, uin := range uins {
+		mailSlice = append(mailSlice, fmt.Sprintf("%v@qq.com", uin.Uin))
+	}
+	mails = strings.Join(mailSlice, ";")
+
+	return
+}

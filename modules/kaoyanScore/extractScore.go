@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 type ScoreFilter interface {
@@ -108,7 +109,7 @@ func (C CSAcademicFilter) Filter(nickname string) bool {
 	reg3 := regexp.MustCompile("学")
 	reg4 := regexp.MustCompile("计科")
 	// 计科 || 计学 || 机学
-	return ((reg1.MatchString(nickname) || reg2.MatchString(nickname)) && reg3.MatchString(nickname)) || reg4.MatchString(nickname)
+	return ((reg1.MatchString(nickname) || reg2.MatchString(nickname)) && reg3.MatchString(nickname)) || reg4.MatchString(nickname) || strings.HasPrefix(nickname, "学")
 }
 
 // CSProfessionalFilter 计算机专硕
@@ -123,7 +124,7 @@ func (C CSProfessionalFilter) Filter(nickname string) bool {
 	reg1 := regexp.MustCompile("计")
 	reg2 := regexp.MustCompile("机")
 	reg3 := regexp.MustCompile("专")
-	return (reg1.MatchString(nickname) || reg2.MatchString(nickname)) && reg3.MatchString(nickname)
+	return ((reg1.MatchString(nickname) || reg2.MatchString(nickname)) && reg3.MatchString(nickname)) || strings.HasPrefix(nickname, "专")
 }
 
 // SEAcademicFilter 软件工程学硕
