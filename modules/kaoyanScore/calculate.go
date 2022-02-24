@@ -7,41 +7,41 @@ import (
 )
 
 func (m *kaoyanScore) Calculate(c *client.QQClient) {
-	//m.updateGroupMembers(c)
-	//fmt.Printf("群列表: %+v\n", m.Groups)
-	//m.updateAdminList(c)
 	if err := c.ReloadGroupList(); err != nil {
 		logger.Error("ReloadGroupList error: %v\n", err)
 	}
 	//fmt.Printf("群列表: %+v\n", c.GroupList)
 	cardsMap := m.getGroupCardNames(c.GroupList)
 	//fmt.Printf("cardsMap: %+v\n", cardsMap)
+	filters := append([]ScoreFilter{}, CSAcademicFilter{}, CSProfessionalFilter{},
+		SEAcademicFilter{}, SEProfessionalFilter{}, Russia{}, Japan{})
 	for groupCode, cards := range cardsMap {
 		if len(cards) == 0 {
 			continue
 		}
-		scoresMap := GetScoreMap(cards, CSAcademicFilter{}, CSProfessionalFilter{},
-			SEAcademicFilter{}, SEProfessionalFilter{}, Russia{}, Japan{})
-		GroupCodeScoreMap := make(map[string][]ScoreGroup)
-		for typ, scores := range scoresMap {
-			logger.Infof("%s: %+v\n", typ, scores)
+		scoresMap := GetScoreMap(cards, filters...)
+		GroupCodeScoreMap := make(map[ScoreFilter][]ScoreGroup)
+		for filter, scores := range scoresMap {
+			//logger.Infof("%s: %+v\n", filter.Name(), scores)
 			// 为每个类型分组
-			GroupCodeScoreMap[typ] = GroupScores(scores)
+			GroupCodeScoreMap[filter] = GroupScores(scores)
 		}
 		msg := "考研分数段统计来啦！\n"
-		for typ, scoreGroups := range GroupCodeScoreMap {
-			counts := 0
-			for _, v := range scoreGroups {
-				counts += v.Len()
-			}
-			msg += fmt.Sprintf("%s(共%v个分数)\n", typ, counts)
-			sum := 0 // 每段依次累加人数
-			for _, scoreGroup := range scoreGroups {
-				sum += scoreGroup.Len()
-				msg += fmt.Sprintf("%v: %v人(累计%v)\n", scoreGroup.Describe(), scoreGroup.Len(), sum)
+		for _, filter := range filters {
+			if scoreGroups, ok := GroupCodeScoreMap[filter]; ok {
+				counts := 0
+				for _, v := range scoreGroups {
+					counts += v.Len()
+				}
+				msg += fmt.Sprintf("%s(共%v个分数)\n", filter.Name(), counts)
+				sum := 0 // 每段依次累加人数
+				for _, scoreGroup := range scoreGroups {
+					sum += scoreGroup.Len()
+					msg += fmt.Sprintf("%v: %v人(累计%v)\n", scoreGroup.Describe(), scoreGroup.Len(), sum)
+				}
 			}
 		}
-		msg += "以上结果通过群名片分析而得，存在一定误差，如误识别实验室门牌号为考研分数，仅供参考。\n"
+		msg += "以上结果通过群名片分析而得，存在一定误差，仅供参考。\n"
 		msg += m.tailMsg
 		logger.Info("拼接得到的考研分数排名:\n %v\n", msg)
 		groupMsg := &message.SendingMessage{}

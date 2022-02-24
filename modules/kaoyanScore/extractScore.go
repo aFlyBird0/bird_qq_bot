@@ -29,19 +29,20 @@ func ExtractScore(nickname string) (score int, ok bool) {
 	return score, true
 }
 
-func GetScoreMap(nicknames []string, filters ...ScoreFilter) map[string][]int {
-	scoreMap := make(map[string][]int)
+// GetScoreMap 传入昵称列表和过滤规则，返回每个规则命中的分数列表
+func GetScoreMap(nicknames []string, filters ...ScoreFilter) map[ScoreFilter][]int {
+	scoreMap := make(map[ScoreFilter][]int)
 	for _, nickname := range nicknames {
 		for _, filter := range filters {
 			if filter.Filter(nickname) {
 				score, ok := ExtractScore(nickname)
 				if ok {
-					scoreMap[filter.Name()] = append(scoreMap[filter.Name()], score)
+					scoreMap[filter] = append(scoreMap[filter], score)
 				}
 			}
 		}
 	}
-	// 排序
+	// 分数排序
 	for _, scores := range scoreMap {
 		sort.Slice(scores, func(i, j int) bool {
 			return scores[i] > scores[j]
