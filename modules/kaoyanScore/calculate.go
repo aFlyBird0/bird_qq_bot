@@ -63,12 +63,15 @@ func (m *kaoyanScore) Calculate(c *client.QQClient) {
 			denseGroups := ScoreGroupCountList(GroupScoresFromCount(CountScores(scores))).FilterByCount(10)
 			GroupCodeScoreMap[filter] = denseGroups
 		}
-		msg := "过密分数段分布来啦！\n"
+		msg := "过密分数段分布来啦！(某段达到10人及以上）\n"
 		for _, filter := range filters {
 			if scoreGroupCounts, ok := GroupCodeScoreMap[filter]; ok {
-				msg += filter.Name() + " 过密分数段分布\n"
+				if len(scoreGroupCounts) == 0 {
+					continue
+				}
+				msg += "\n" + filter.Name() + " 过密分数段分布\n"
 				for _, scoreGroupCount := range scoreGroupCounts {
-					msg += fmt.Sprintf("%s(共%v人)\n", scoreGroupCount.Describe(), scoreGroupCount.Count())
+					msg += fmt.Sprintf("【%s】(共%v人)\n", scoreGroupCount.Describe(), scoreGroupCount.Count())
 					for _, scoreCount := range scoreGroupCount.Scores {
 						msg += scoreCount.Describe() + "  "
 					}

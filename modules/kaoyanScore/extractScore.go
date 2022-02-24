@@ -80,17 +80,14 @@ func GroupScoresEachTen(scores []int) (scoreGroups []ScoreGroup) {
 	var end int = start + 9
 	scoresOneGroup := make([]int, 0)
 	for _, score := range scores {
-		// 在同一分数段内
-		if score >= start && score <= end {
-			scoresOneGroup = append(scoresOneGroup, score)
-		} else {
-			// 不在同一分数段内
+		// 不在同一分数段内
+		if score < start || score > end {
 			scoreGroups = append(scoreGroups, ScoreGroup{start, end, scoresOneGroup})
 			scoresOneGroup = make([]int, 0)
 			start = score / 10 * 10
 			end = start + 9
-			scoresOneGroup = append(scoresOneGroup, score)
 		}
+		scoresOneGroup = append(scoresOneGroup, score)
 	}
 	// 别忘了最后一段
 	scoreGroups = append(scoreGroups, ScoreGroup{start, end, scoresOneGroup})
@@ -160,16 +157,14 @@ func GroupScoresFromCount(scores []ScoreCount) []ScoreGroupCount {
 	var end int = start + 9
 	scoresOneGroup := make([]ScoreCount, 0)
 	for _, scoreCount := range scores {
-		// 在同一分数段内的 ScoreCount
-		if scoreCount.Score >= start && scoreCount.Score <= end {
-			scoresOneGroup = append(scoresOneGroup, scoreCount)
-		} else {
-			// 不在同一分数段内
+		// ScoreCount 不在同一分数段内
+		if scoreCount.Score < start || scoreCount.Score > end {
 			scoreGroupCounts = append(scoreGroupCounts, ScoreGroupCount{start, end, scoresOneGroup})
 			start = scoreCount.Score / 10 * 10
 			end = start + 9
 			scoresOneGroup = make([]ScoreCount, 0)
 		}
+		scoresOneGroup = append(scoresOneGroup, scoreCount)
 	}
 	// 别忘了最后一段
 	scoreGroupCounts = append(scoreGroupCounts, ScoreGroupCount{start, end, scoresOneGroup})
@@ -179,7 +174,7 @@ func GroupScoresFromCount(scores []ScoreCount) []ScoreGroupCount {
 type ScoreGroupCountList []ScoreGroupCount
 
 func (s *ScoreGroupCount) Describe() string {
-	return fmt.Sprintf("%v - %v 分段明细", s.Min, s.Max)
+	return fmt.Sprintf("%v - %v", s.Min, s.Max)
 }
 
 func (s *ScoreGroupCount) Count() (count int) {
