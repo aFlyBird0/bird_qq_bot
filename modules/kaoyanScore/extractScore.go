@@ -70,7 +70,8 @@ func (s ScoreGroup) Len() int {
 	return len(s.scores)
 }
 
-func GroupScores(scores []int) (scoreGroups []ScoreGroup) {
+// GroupScoresEachTen 将分数分组，严格十分一段
+func GroupScoresEachTen(scores []int) (scoreGroups []ScoreGroup) {
 	if len(scores) == 0 {
 		return
 	}
@@ -94,6 +95,114 @@ func GroupScores(scores []int) (scoreGroups []ScoreGroup) {
 	// 别忘了最后一段
 	scoreGroups = append(scoreGroups, ScoreGroup{start, end, scoresOneGroup})
 	return scoreGroups
+}
+
+// ScoreCount 记录每个分数的数量
+type ScoreCount struct {
+	Score int
+	Count int
+}
+
+type ScoreCountList []ScoreCount
+
+func CountScores(scores []int) []ScoreCount {
+	// 哨兵
+	scores = append(scores, -1)
+	scoreCounts := make([]ScoreCount, 0)
+	scoreCountNow := ScoreCount{Score: scores[0]}
+	countNow := 1
+	for i, score := range scores[:len(scores)-1] {
+		if score == scores[i+1] {
+			countNow++
+		} else {
+			scoreCountNow.Count = countNow
+			scoreCounts = append(scoreCounts, scoreCountNow)
+			scoreCountNow = ScoreCount{Score: score}
+			countNow = 1
+		}
+	}
+	return scoreCounts
+}
+
+func (s ScoreCount) Describe() string {
+	return fmt.Sprintf("%v分: %v人", s.Score, s.Count)
+}
+
+func (s ScoreCountList) Filter(remain func(s ScoreCount) bool) ScoreCountList {
+	var result ScoreCountList
+	for _, scoreCount := range s {
+		if remain(scoreCount) {
+			result = append(result, scoreCount)
+		}
+	}
+	return result
+}
+
+func (s ScoreCountList) FilterByCount(count int) ScoreCountList {
+	return s.Filter(func(s ScoreCount) bool {
+		return s.Count >= count
+	})
+}
+
+type ScoreGroupCount struct {
+	Min    int          // 最小分数
+	Max    int          // 最大分数
+	Scores []ScoreCount // 分数列表
+}
+
+func GroupScoresFromCount(scores []ScoreCount) []ScoreGroupCount {
+	if len(scores) == 0 {
+		return nil
+	}
+	scoreGroupCounts := make([]ScoreGroupCount, 0)
+	// 分数段起始
+	var start int = scores[0].Score / 10 * 10
+	var end int = start + 9
+	scoresOneGroup := make([]ScoreCount, 0)
+	for _, scoreCount := range scores {
+		// 在同一分数段内的 ScoreCount
+		if scoreCount.Score >= start && scoreCount.Score <= end {
+			scoresOneGroup = append(scoresOneGroup, scoreCount)
+		} else {
+			// 不在同一分数段内
+			scoreGroupCounts = append(scoreGroupCounts, ScoreGroupCount{start, end, scoresOneGroup})
+			start = scoreCount.Score / 10 * 10
+			end = start + 9
+			scoresOneGroup = make([]ScoreCount, 0)
+		}
+	}
+	// 别忘了最后一段
+	scoreGroupCounts = append(scoreGroupCounts, ScoreGroupCount{start, end, scoresOneGroup})
+	return scoreGroupCounts
+}
+
+type ScoreGroupCountList []ScoreGroupCount
+
+func (s *ScoreGroupCount) Describe() string {
+	return fmt.Sprintf("%v - %v 分段明细", s.Min, s.Max)
+}
+
+func (s *ScoreGroupCount) Count() (count int) {
+	for _, scoreCount := range s.Scores {
+		count += scoreCount.Count
+	}
+	return
+}
+
+func (list ScoreGroupCountList) Filter(remain func(one ScoreGroupCount) bool) ScoreGroupCountList {
+	var result ScoreGroupCountList
+	for _, one := range list {
+		if remain(one) {
+			result = append(result, one)
+		}
+	}
+	return result
+}
+
+func (list ScoreGroupCountList) FilterByCount(count int) ScoreGroupCountList {
+	return list.Filter(func(one ScoreGroupCount) bool {
+		return one.Count() >= count
+	})
 }
 
 // CSAcademicFilter 计算机学硕
