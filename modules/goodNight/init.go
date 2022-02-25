@@ -28,7 +28,7 @@ type mConfig struct {
 	triggers []string
 }
 
-func (g *goodNight) InitModuleConfig() {
+func (g *goodNight) HotReload() {
 	g.apiKey = bot.GetModConfigString(g, "apiKey")
 	g.triggers = bot.GetModConfigStringSlice(g, "triggers")
 }
@@ -41,7 +41,7 @@ func (g *goodNight) GetModuleInfo() bot.ModuleInfo {
 }
 
 func (g *goodNight) Init() {
-	g.InitModuleConfig()
+	g.HotReload()
 }
 
 func (g *goodNight) PostInit() {

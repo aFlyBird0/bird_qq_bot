@@ -103,19 +103,18 @@ type ScoreCount struct {
 type ScoreCountList []ScoreCount
 
 func CountScores(scores []int) []ScoreCount {
-	// 哨兵
-	scores = append(scores, -1)
 	scoreCounts := make([]ScoreCount, 0)
-	scoreCountNow := ScoreCount{Score: scores[0]}
-	countNow := 1
-	for i, score := range scores[:len(scores)-1] {
-		if score == scores[i+1] {
-			countNow++
-		} else {
-			scoreCountNow.Count = countNow
-			scoreCounts = append(scoreCounts, scoreCountNow)
-			scoreCountNow = ScoreCount{Score: score}
-			countNow = 1
+	for _, score := range scores {
+		find := false
+		for i, scoreCount := range scoreCounts {
+			if scoreCount.Score == score {
+				scoreCounts[i].Count++
+				find = true
+				break
+			}
+		}
+		if !find {
+			scoreCounts = append(scoreCounts, ScoreCount{score, 1})
 		}
 	}
 	return scoreCounts

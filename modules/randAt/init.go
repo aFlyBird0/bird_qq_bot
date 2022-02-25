@@ -30,7 +30,7 @@ type mConfig struct {
 	triggers []string //触发词
 }
 
-func (r *randAt) InitModuleConfig() {
+func (r *randAt) HotReload() {
 	r.triggers = bot.GetModConfigStringSlice(r, "triggers")
 }
 
@@ -43,7 +43,7 @@ func (r *randAt) GetModuleInfo() bot.ModuleInfo {
 
 func (r *randAt) Init() {
 	r.botUin = config.GlobalConfig.GetInt64("bot.account")
-	r.InitModuleConfig()
+	r.HotReload()
 }
 
 func (r *randAt) PostInit() {

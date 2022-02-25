@@ -38,14 +38,14 @@ func (r *restart) GetModuleInfo() bot.ModuleInfo {
 	}
 }
 
-func (r *restart) InitModuleConfig() {
+func (r *restart) HotReload() {
 	r.allows = bot.GetModConfigInt64Slice(r, "allows")
 	r.webhookUrl = bot.GetModConfigString(r, "webhook")
 	r.triggers = bot.GetModConfigStringSlice(r, "triggers")
 }
 
 func (r *restart) Init() {
-	r.InitModuleConfig()
+	r.HotReload()
 }
 
 func (r *restart) PostInit() {

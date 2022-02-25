@@ -2,6 +2,7 @@ package main
 
 import (
 	"bird_qq_bot/bot"
+	"bird_qq_bot/config"
 	"fmt"
 	"os"
 	"os/signal"
@@ -43,6 +44,8 @@ func main() {
 
 	// 刷新好友列表，群列表
 	bot.RefreshList()
+
+	bot.HotUpdateModuleConfig(config.GetWatcher())
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt, os.Kill)

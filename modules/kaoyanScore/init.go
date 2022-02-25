@@ -22,11 +22,15 @@ var instance *kaoyanScore
 var logger *logrus.Entry
 
 type kaoyanScore struct {
+	mConfig
+	cron *cron.Cron //
+}
+
+type mConfig struct {
 	triggers       []string
-	AllowGroupList []int64    // 开启的群号列表
-	adminList      []int64    // 管理员列表, 目前有问题，所有群的管理混在一起了
-	tailMsg        string     // 尾部消息（实验室宣传语）
-	cron           *cron.Cron //
+	AllowGroupList []int64 // 开启的群号列表
+	adminList      []int64 // 管理员列表, 目前有问题，所有群的管理混在一起了
+	tailMsg        string  // 尾部消息（实验室宣传语）
 }
 
 func (m *kaoyanScore) GetModuleInfo() bot.ModuleInfo {
@@ -37,10 +41,14 @@ func (m *kaoyanScore) GetModuleInfo() bot.ModuleInfo {
 }
 
 func (m *kaoyanScore) Init() {
+	m.HotReload()
+	m.cron = cron.New() // 就不设置定时任务了，直接用消息触发吧
+}
+
+func (m *kaoyanScore) HotReload() {
 	m.AllowGroupList = bot.GetModConfigInt64Slice(m, "allowGroupList")
 	m.triggers = bot.GetModConfigStringSlice(m, "triggers")
 	m.tailMsg = bot.GetModConfigString(m, "tailMsg")
-	m.cron = cron.New() // 就不设置定时任务了，直接用消息触发吧
 }
 
 func (m *kaoyanScore) PostInit() {

@@ -33,6 +33,9 @@ func (p *pong) GetModuleInfo() bot.ModuleInfo {
 
 func (p *pong) Init() {
 	p.startTime = time.Now()
+}
+
+func (p *pong) HotReload() {
 	p.triggers = bot.GetModConfigStringSlice(p, "triggers")
 }
 

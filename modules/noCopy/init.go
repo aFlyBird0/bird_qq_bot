@@ -35,7 +35,7 @@ type mConfig struct {
 	whiteListQQ   []int64
 }
 
-func (n *noCopy) InitModuleConfig() {
+func (n *noCopy) HotReload() {
 	n.whiteListWord = bot.GetModConfigStringSlice(n, "whiteListWord")
 	n.banGroups = bot.GetModConfigInt64Slice(n, "banGroups")
 	n.whiteListQQ = bot.GetModConfigInt64Slice(n, "whiteListQQ")
@@ -55,7 +55,7 @@ func (n *noCopy) GetModuleInfo() bot.ModuleInfo {
 func (n *noCopy) Init() {
 	n.Groups = make(map[int64]*client.GroupInfo)
 	n.groupMsg = NewGroupMsg()
-	n.InitModuleConfig()
+	n.HotReload()
 }
 
 func (n *noCopy) PostInit() {

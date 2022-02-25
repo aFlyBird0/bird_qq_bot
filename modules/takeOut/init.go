@@ -17,6 +17,11 @@ func init() {
 }
 
 type takeOut struct {
+	mConfig
+}
+
+type mConfig struct {
+	triggers []string
 }
 
 var instance *takeOut
@@ -31,13 +36,18 @@ func (t *takeOut) GetModuleInfo() bot.ModuleInfo {
 }
 
 func (t *takeOut) Init() {
+	t.HotReload()
+}
+
+func (t *takeOut) HotReload() {
+	t.triggers = bot.GetModConfigStringSlice(t, "triggers")
 }
 
 func (t *takeOut) PostInit() {
 }
 
 func (t *takeOut) Serve(b *bot.Bot) {
-	b.OnGroupMessage(t.sendRandNum)
+	b.OnGroupMsgAuth(t.sendRandNum, &bot.GroupAllowMsgF{Allows: t.triggers})
 }
 
 func (t *takeOut) Start(b *bot.Bot) {
@@ -49,9 +59,6 @@ func (t *takeOut) Stop(b *bot.Bot, wg *sync.WaitGroup) {
 
 // 发送随机数
 func (t *takeOut) sendRandNum(qqClient *client.QQClient, m *message.GroupMessage) {
-	if m.ToString() != "外卖" {
-		return
-	}
 	msgSend := message.SendingMessage{}
 	msgText := "宝贝，你 roll 了个 " + strconv.Itoa(utils.GetOneRandNum(1, 101))
 	atDisplay := "@"

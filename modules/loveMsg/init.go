@@ -45,6 +45,9 @@ func (l *loveMsg) GetModuleInfo() bot.ModuleInfo {
 }
 
 func (l *loveMsg) Init() {
+}
+
+func (l *loveMsg) HotReload() {
 	l.triggers = bot.GetModConfigStringSlice(l, "triggers")
 }
 

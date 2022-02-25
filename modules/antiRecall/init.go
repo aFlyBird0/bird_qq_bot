@@ -29,12 +29,12 @@ func (a *antiRecall) GetModuleInfo() bot.ModuleInfo {
 	}
 }
 
-func (a *antiRecall) InitModuleConfig() {
+func (a *antiRecall) HotReload() {
 	a.allowGroups = bot.GetModConfigInt64Slice(a, "allowGroups")
 }
 
 func (a *antiRecall) Init() {
-	a.InitModuleConfig()
+	a.HotReload()
 }
 
 func (a *antiRecall) PostInit() {
