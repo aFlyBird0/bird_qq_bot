@@ -21,9 +21,12 @@ var instance *kaoyanScore
 
 var logger *logrus.Entry
 
+var msgFinalMap sync.Map
+
 type kaoyanScore struct {
 	mConfig
-	cron *cron.Cron //
+	lastUpdateTime time.Time
+	cron           *cron.Cron //
 }
 
 type mConfig struct {
@@ -70,10 +73,12 @@ func (m *kaoyanScore) Serve(c *bot.Bot) {
 	filters = append(filters, &bot.GroupAllowMsgF{Allows: m.triggers})
 	filters = append(filters, &bot.GroupAllowGroupCodeF{Allows: m.AllowGroupList})
 	//filters = append(filters, &bot.GroupAllowUinF{Allows: m.adminList})
-	c.OnGroupMsgAuth(m.CalculateByTrigger, filters...)
+	c.OnGroupMsgAuth(m.CalculateByGroupTrigger, filters...)
+
 }
 
 func (m *kaoyanScore) Start(c *bot.Bot) {
+	runGin()
 }
 
 func (m *kaoyanScore) Stop(c *bot.Bot, wg *sync.WaitGroup) {
