@@ -46,6 +46,7 @@ func (m *kaoyanScore) GetModuleInfo() bot.ModuleInfo {
 func (m *kaoyanScore) Init() {
 	m.HotReload()
 	m.cron = cron.New() // 就不设置定时任务了，直接用消息触发吧
+
 }
 
 func (m *kaoyanScore) HotReload() {
@@ -74,6 +75,10 @@ func (m *kaoyanScore) Serve(c *bot.Bot) {
 	filters = append(filters, &bot.GroupAllowGroupCodeF{Allows: m.AllowGroupList})
 	//filters = append(filters, &bot.GroupAllowUinF{Allows: m.adminList})
 	c.OnGroupMsgAuth(m.CalculateByGroupTrigger, filters...)
+	m.cron.AddFunc("@every 10m", func() {
+		m.CalculateAndSave(c.QQClient)
+	})
+	m.cron.Start()
 
 }
 

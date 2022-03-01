@@ -166,6 +166,15 @@ func (m *kaoyanScore) CalculatePure(c *client.QQClient) map[groupCode][2]string 
 	return result
 }
 
+func (m *kaoyanScore) CalculateAndSave(c *client.QQClient) {
+	msgMap := m.CalculatePure(c)
+	m.lastUpdateTime = time.Now()
+	for group, msgs := range msgMap {
+		updateTimeStr := m.lastUpdateTime.Format("2006-01-02 15:04:05")
+		msgFinalMap.Store(group, "最后更新于:"+updateTimeStr+"\n\n"+msgs[0]+"\n"+msgs[1]+"\n")
+	}
+}
+
 func (m *kaoyanScore) CalculateByGroupTrigger(c *client.QQClient, msg *message.GroupMessage) {
 	if time.Now().Sub(m.lastUpdateTime) < 15*time.Second {
 		tooOftenHint := "查询太频繁啦！"
@@ -174,14 +183,9 @@ func (m *kaoyanScore) CalculateByGroupTrigger(c *client.QQClient, msg *message.G
 		c.SendGroupMessage(msg.GroupCode, groupMsg)
 		return
 	}
-	msgMap := m.CalculatePure(c)
-	m.lastUpdateTime = time.Now()
-	msgThisGroup := msgMap[msg.GroupCode]
-	updateTimeStr := m.lastUpdateTime.Format("2006-01-02 15:04:05")
-	msgFinalMap.Store(msg.GroupCode, "最后更新于:"+updateTimeStr+"\n\n"+msgThisGroup[0]+"\n"+msgThisGroup[1]+"\n")
-
+	m.CalculateAndSave(c)
 	url := "http://score.kaoyan.aflybird.cn/score?group=" + strconv.FormatInt(msg.GroupCode, 10)
-	hint := "分数如下，每次发送关键词时时更新: "
+	hint := "分数如下，每10分钟自动更新，每次发送关键词立即更新: "
 	groupMsg := &message.SendingMessage{}
 	groupMsg.Append(message.NewText(hint + url))
 	c.SendGroupMessage(msg.GroupCode, groupMsg)

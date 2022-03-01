@@ -8,9 +8,10 @@ import (
 	"strings"
 )
 
+// ScoreFilter 专业过滤接口
 type ScoreFilter interface {
-	Name() string
-	Filter(nickname string) bool
+	Name() string                // 专业名字
+	Filter(nickname string) bool // 专业匹配规则
 }
 
 func ExtractScore(nickname string) (score int, ok bool) {
