@@ -1,11 +1,35 @@
 package goodNight
 
 import (
+	"fmt"
 	"github.com/parnurzeal/gorequest"
 	"time"
 )
 
-const tianXingWanAnApi = "http://api.tianapi.com/wanan/index"
+const (
+	tianXingWanAnUrl   = "http://api.tianapi.com/wanan/index"
+	tianXingTianGouUrl = "http://api.tianapi.com/tiangou/index"
+)
+
+type Client struct {
+	apiKey string
+}
+
+type API struct {
+	URL  string
+	Name string
+}
+
+var (
+	WanAnAPI = API{
+		URL:  tianXingWanAnUrl,
+		Name: "晚安",
+	}
+	TianGouAPI = API{
+		URL:  tianXingTianGouUrl,
+		Name: "舔狗日记",
+	}
+)
 
 type apiResp struct {
 	Code     int    `json:"code"`
@@ -15,18 +39,23 @@ type apiResp struct {
 	} `json:"newslist"`
 }
 
-func getNightMsg(apiKey string) string {
+func NewClient(apiKey string) *Client {
+	return &Client{
+		apiKey: apiKey,
+	}
+}
+
+func (c *Client) getFirstMsg(api API) (string, error) {
 	resp := apiResp{}
-	url := tianXingWanAnApi + "?key=" + apiKey
-	_, _, errors := gorequest.New().Timeout(time.Second * 10).Get(url).EndStruct(&resp)
-	if errors != nil {
-		logger.Errorf("获取情话失败：%v", errors)
-		return ""
+	url := api.URL + "?key=" + c.apiKey
+	_, _, errArr := gorequest.New().Timeout(time.Second * 10).Get(url).EndStruct(&resp)
+	err := fmt.Errorf("%v接口请求失败：%v", api.Name, errArr)
+	if len(errArr) > 0 {
+		return "", err
 	}
 	if resp.Code == 200 && len(resp.NewsList) > 0 {
-		return resp.NewsList[0].Content
+		return resp.NewsList[0].Content, nil
 	} else {
-		logger.Errorf("获取晚安消息失败：%v: %v", resp.Code, resp.Msg)
-		return ""
+		return "", err
 	}
 }

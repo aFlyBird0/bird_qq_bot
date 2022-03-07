@@ -42,8 +42,9 @@ modules:
     allows:
       - 123456789
   bird.goodNight:     # 晚安模块
-    triggers: ["晚安"]
     apiKey: xxxxxxxxxxx # https://www.tianapi.com/apiview/142 需要申请 apiKey
+    nightTriggers: ["晚安"]
+    tianGouTriggers: ["舔狗日记"]
   bird.randAt: # 随机@模块
     triggers: ["开枪", "随机@"]
   bird.kaoyanScore: # 考研分数统计模块
