@@ -45,6 +45,7 @@ func (l *loveMsg) GetModuleInfo() bot.ModuleInfo {
 }
 
 func (l *loveMsg) Init() {
+	l.HotReload()
 }
 
 func (l *loveMsg) HotReload() {

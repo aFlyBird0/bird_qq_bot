@@ -1,4 +1,4 @@
-package goodNight
+package tianXing
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	tianXingWanAnUrl   = "http://api.tianapi.com/wanan/index"
-	tianXingTianGouUrl = "http://api.tianapi.com/tiangou/index"
+	baseUrl   = "http://api.tianapi.com/"
+	urlSuffix = "/index"
 )
 
 type Client struct {
@@ -20,17 +20,6 @@ type API struct {
 	Name string
 }
 
-var (
-	WanAnAPI = API{
-		URL:  tianXingWanAnUrl,
-		Name: "晚安",
-	}
-	TianGouAPI = API{
-		URL:  tianXingTianGouUrl,
-		Name: "舔狗日记",
-	}
-)
-
 type apiResp struct {
 	Code     int    `json:"code"`
 	Msg      string `json:"msg"`
@@ -38,6 +27,25 @@ type apiResp struct {
 		Content string `json:"content"`
 	} `json:"newslist"`
 }
+
+var (
+	wanAnAPI = API{
+		URL:  buildUrl("wanan"),
+		Name: "晚安",
+	}
+	tianGouAPI = API{
+		URL:  buildUrl("tiangou"),
+		Name: "舔狗日记",
+	}
+	zaoAnAPI = API{
+		URL:  buildUrl("zaoan"),
+		Name: "早安",
+	}
+	healthTipAPI = API{
+		URL:  buildUrl("healthtip"),
+		Name: "健康小贴士",
+	}
+)
 
 func NewClient(apiKey string) *Client {
 	return &Client{
@@ -58,4 +66,8 @@ func (c *Client) getFirstMsg(api API) (string, error) {
 	} else {
 		return "", err
 	}
+}
+
+func buildUrl(path string) string {
+	return baseUrl + path + urlSuffix
 }

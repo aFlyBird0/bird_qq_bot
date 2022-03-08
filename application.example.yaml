@@ -17,7 +17,7 @@ module:
     bird.randAt: true       # 随机@模块
     # 以下模块是我服务器的专属功能，不建议开启
     bird.restart: false     # 重启模块
-    bird.goodNight: false   # 晚安模块，需要申请 apiKey，见模块详细配置
+    bird.tianXing: false   # 天行api模块，需要申请 apiKey，见模块详细配置
     bird.kaoyanScore: true  # 考研分数统计模块
 
 # 子模块个性化配置
@@ -41,10 +41,13 @@ modules:
     webhook:
     allows:
       - 123456789
-  bird.goodNight:     # 晚安模块
+  bird.tianXing:     # 天行api模块
     apiKey: xxxxxxxxxxx # https://www.tianapi.com/apiview/142 需要申请 apiKey
-    nightTriggers: ["晚安"]
-    tianGouTriggers: ["舔狗日记"]
+    triggers:
+      morning: ["早安"] # 早安
+      night: ["晚安"]  # 晚安
+      dog: ["舔狗日记"] # 舔狗日记
+      healthTip: ["健康小贴士"] #健康小贴士
   bird.randAt: # 随机@模块
     triggers: ["开枪", "随机@"]
   bird.kaoyanScore: # 考研分数统计模块

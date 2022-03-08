@@ -9,7 +9,6 @@ import (
 
 	"bird_qq_bot/utils"
 
-	_ "bird_qq_bot/modules/goodNight"
 	_ "bird_qq_bot/modules/kaoyanScore"
 	_ "bird_qq_bot/modules/logging"
 	_ "bird_qq_bot/modules/loveMsg"
@@ -18,6 +17,7 @@ import (
 	_ "bird_qq_bot/modules/randAt"
 	_ "bird_qq_bot/modules/restart"
 	_ "bird_qq_bot/modules/takeOut"
+	_ "bird_qq_bot/modules/tianXing"
 )
 
 func init() {
