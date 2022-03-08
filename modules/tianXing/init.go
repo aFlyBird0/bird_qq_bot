@@ -7,6 +7,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/sirupsen/logrus"
+	"strings"
 	"sync"
 )
 
@@ -31,6 +32,8 @@ type mConfig struct {
 	morningTriggers   []string
 	healthTipTriggers []string
 }
+
+type msgHandle func(msg *string)
 
 func (g *tianXing) HotReload() {
 	g.apiKey = bot.GetModConfigString(g, "apiKey")
@@ -69,7 +72,7 @@ func (g *tianXing) Stop(b *bot.Bot, wg *sync.WaitGroup) {
 }
 
 func (g *tianXing) sendNightMsg() func(qqClient *client.QQClient, m *message.GroupMessage) {
-	return g.msgFromTianXing(wanAnAPI)
+	return g.msgFromTianXing(wanAnAPI, addWanAnHint)
 }
 
 func (g *tianXing) sendTianGouMsg() func(qqClient *client.QQClient, m *message.GroupMessage) {
@@ -77,14 +80,14 @@ func (g *tianXing) sendTianGouMsg() func(qqClient *client.QQClient, m *message.G
 }
 
 func (g *tianXing) sendMorningMsg() func(qqClient *client.QQClient, m *message.GroupMessage) {
-	return g.msgFromTianXing(zaoAnAPI)
+	return g.msgFromTianXing(zaoAnAPI, addZaoAnHint)
 }
 
 func (g *tianXing) sendHealthTipMsg() func(qqClient *client.QQClient, m *message.GroupMessage) {
 	return g.msgFromTianXing(healthTipAPI)
 }
 
-func (g *tianXing) msgFromTianXing(api API) func(qqClient *client.QQClient, m *message.GroupMessage) {
+func (g *tianXing) msgFromTianXing(api API, handlers ...msgHandle) func(qqClient *client.QQClient, m *message.GroupMessage) {
 	return func(qqClient *client.QQClient, m *message.GroupMessage) {
 		msgSend := message.SendingMessage{}
 		atDisplay := "@"
@@ -100,9 +103,25 @@ func (g *tianXing) msgFromTianXing(api API) func(qqClient *client.QQClient, m *m
 		if err != nil {
 			logger.Error(err)
 			msgText = fmt.Sprintf("%v 接口请求失败", api.Name)
+		} else {
+			for _, h := range handlers {
+				h(&msgText)
+			}
 		}
 		msgSend.Append(message.NewAt(m.Sender.Uin, atDisplay))
 		msgSend.Append(message.NewText(msgText))
 		qqClient.SendGroupMessage(m.GroupCode, &msgSend)
+	}
+}
+
+func addWanAnHint(msg *string) {
+	if !strings.Contains(*msg, "晚安") {
+		*msg += "晚安！"
+	}
+}
+
+func addZaoAnHint(msg *string) {
+	if !strings.Contains(*msg, "早安") {
+		*msg += "早安！"
 	}
 }
