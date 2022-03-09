@@ -33,6 +33,7 @@ func (p *pong) GetModuleInfo() bot.ModuleInfo {
 
 func (p *pong) Init() {
 	p.startTime = time.Now()
+	p.HotReload()
 }
 
 func (p *pong) HotReload() {
