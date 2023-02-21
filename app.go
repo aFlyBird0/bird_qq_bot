@@ -1,12 +1,14 @@
 package main
 
 import (
-	"bird_qq_bot/bot"
-	"bird_qq_bot/config"
 	"fmt"
 	"os"
 	"os/signal"
 
+	"github.com/Mrs4s/MiraiGo/client"
+	"github.com/Mrs4s/MiraiGo/message"
+
+	"bird_qq_bot/bot"
 	"bird_qq_bot/utils"
 
 	_ "bird_qq_bot/modules/autoCopy"
@@ -39,17 +41,21 @@ func main() {
 	bot.UseProtocol(bot.IPad)
 
 	// 登录
-	if err := bot.Login(); err != nil {
-		fmt.Println("登录失败:", err)
+	err := bot.Login()
+	if err != nil {
+		panic(err)
 	}
+	//bot.SaveToken() // 存储快速登录使用的 Token, 如需使用快捷登录请解除本条注释
 
 	// 刷新好友列表，群列表
 	bot.RefreshList()
 
-	bot.HotUpdateModuleConfig(config.GetWatcher())
+	bot.Instance.GroupMessageEvent.Subscribe(func(client *client.QQClient, event *message.GroupMessage) {
+		fmt.Printf("收到群聊信息：%v", event)
+	})
 
 	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt, os.Kill)
+	signal.Notify(ch, os.Interrupt)
 	<-ch
 	bot.Stop()
 }

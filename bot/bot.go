@@ -4,20 +4,21 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/pkg/errors"
 	_ "image/png"
-	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/pkg/errors"
 
 	qrcodeTerminal "github.com/Baozisoftware/qrcode-terminal-go"
 	"github.com/tuotoo/qrcode"
 
 	"bird_qq_bot/config"
 	"bird_qq_bot/utils"
+
 	"github.com/Mrs4s/MiraiGo/client"
 	"github.com/sirupsen/logrus"
 )
@@ -38,21 +39,42 @@ var logger = logrus.WithField("bot", "internal")
 // 使用 config.GlobalConfig 初始化账号
 // 使用 ./device.json 初始化设备信息
 func Init() {
+	GenRandomDevice()
+	deviceJSONContent := utils.ReadFile("./device.json")
+	InitWithDeviceJSONContent(deviceJSONContent)
+}
+
+type InitOption struct {
+	Account           int64
+	Password          string
+	DeviceJSONContent []byte //cannot be nil if using option init
+}
+
+func InitWithOption(option InitOption) error {
 	Instance = &Bot{
-		client.NewClient(
-			config.GlobalConfig.GetInt64("bot.account"),
-			config.GlobalConfig.GetString("bot.password"),
+		QQClient: client.NewClient(
+			option.Account,
+			option.Password,
 		),
-		false,
+		start: false,
 	}
-	if exist, _ := utils.FileExist("./device.json"); !exist {
-		logger.Warn("device.json不存在, 即将自动生成")
-		GenRandomDevice()
-		logger.Info("device.json生成完成")
-	}
-	err := client.SystemDeviceInfo.ReadJson(utils.ReadFile("./device.json"))
+	err := client.SystemDeviceInfo.ReadJson(option.DeviceJSONContent)
 	if err != nil {
-		logger.WithError(err).Panic("device.json error")
+		return errors.Errorf("failed to apply device.json with err:%s", err)
+	}
+	return nil
+}
+
+func InitWithDeviceJSONContent(deviceJSONContent []byte) {
+	var account = config.GlobalConfig.GetInt64("bot.account")
+	var password = config.GlobalConfig.GetString("bot.password")
+	err := InitWithOption(InitOption{
+		Account:           account,
+		Password:          password,
+		DeviceJSONContent: deviceJSONContent,
+	})
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -71,13 +93,12 @@ func UseDevice(device []byte) error {
 
 // GenRandomDevice 生成随机设备信息
 func GenRandomDevice() {
-	client.GenRandomDevice()
 	b, _ := utils.FileExist("./device.json")
 	if b {
 		logger.Warn("device.json exists, will not write device to file")
 		return
 	}
-	err := ioutil.WriteFile("device.json", client.SystemDeviceInfo.ToJson(), os.FileMode(0755))
+	err := os.WriteFile("device.json", client.SystemDeviceInfo.ToJson(), os.FileMode(0755))
 	if err != nil {
 		logger.WithError(err).Errorf("unable to write device.json")
 	}
@@ -89,51 +110,75 @@ func SaveToken() {
 	_ = os.WriteFile("session.token", AccountToken, 0o644)
 }
 
+type LoginMethod string
+
+const (
+	LoginMethodToken  = "token"
+	LoginMethodQRCode = "qrcode"
+	LoginMethodCommon = "common"
+)
+
 // Login 登录
 func Login() error {
+	var tokenData []byte = nil
 	// 存在token缓存的情况快速恢复会话
 	if exist, _ := utils.FileExist("./session.token"); exist {
 		logger.Infof("检测到会话缓存, 尝试快速恢复登录")
 		token, err := os.ReadFile("./session.token")
-		if err == nil {
+		if err != nil {
+			return fmt.Errorf("failed to read token from file with err: %w", err)
+		}
+		tokenData = token
+	}
+	fmt.Println(Instance.Uin)
+	var loginMethodValue = config.GlobalConfig.GetString("bot.login-method")
+	return LoginWithOption(LoginOption{
+		LoginMethod:              LoginMethod(loginMethodValue),
+		Token:                    tokenData,
+		UseTokenWhenUnmatchedUin: true,
+	})
+}
+
+type LoginOption struct {
+	LoginMethod              LoginMethod
+	Token                    []byte //if not nil, try with most priority
+	UseTokenWhenUnmatchedUin bool
+}
+
+func LoginWithOption(option LoginOption) error {
+	if option.Token != nil {
+		err := func() error {
+			logger.Infof("检测到会话缓存, 尝试快速恢复登录")
+			var token = option.Token
 			r := binary.NewReader(token)
 			cu := r.ReadInt64()
 			if Instance.Uin != 0 {
-				if cu != Instance.Uin {
-					logger.Warnf("警告: 配置文件内的QQ号 (%v) 与会话缓存内的QQ号 (%v) 不相同", Instance.Uin, cu)
-					logger.Warnf("1. 使用会话缓存继续.")
-					logger.Warnf("2. 删除会话缓存并退出程序.")
-					logger.Warnf("请选择: (5秒后自动选1)")
-					text := readLineTimeout(time.Second*5, "1")
-					if text == "2" {
-						_ = os.Remove("session.token")
-						logger.Infof("会话缓存已删除.")
-						os.Exit(0)
-					}
+				if cu != Instance.Uin && !option.UseTokenWhenUnmatchedUin {
+					return fmt.Errorf("配置文件内的QQ号 (%v) 与会话缓存内的QQ号 (%v) 不相同", Instance.Uin, cu)
 				}
 			}
-			if err = Instance.TokenLogin(token); err != nil {
-				_ = os.Remove("session.token")
-				logger.Warnf("恢复会话失败: %v , 尝试使用正常流程登录.", err)
+			if err := Instance.TokenLogin(token); err != nil {
 				time.Sleep(time.Second)
 				Instance.Disconnect()
-				Instance.Release()
-				Instance.QQClient = client.NewClient(config.GlobalConfig.GetInt64("bot.account"),
-					config.GlobalConfig.GetString("bot.password"))
+				return errors.Errorf("恢复会话失败(%s)", err)
 			} else {
 				logger.Infof("快速恢复登录成功")
 				return nil
 			}
+		}()
+		if err != nil {
+			logger.WithError(err).Warn("failed restore session by token, fallback to common or qrcode")
+		} else {
+			return nil
 		}
 	}
-	// 不存在token缓存 走正常流程
-	print(Instance.Uin)
-	if Instance.Uin != 0 {
-		// 有账号就先普通登录
+	switch option.LoginMethod {
+	case LoginMethodCommon:
 		return CommonLogin()
-	} else {
-		// 没有账号就扫码登录
+	case LoginMethodQRCode:
 		return QrcodeLogin()
+	default:
+		return errors.New("unknown login method")
 	}
 }
 
@@ -141,7 +186,6 @@ func Login() error {
 func CommonLogin() error {
 	res, err := Instance.Login()
 	if err != nil {
-		fmt.Println("登录错误2", err)
 		return err
 	}
 	return loginResponseProcessor(res)
