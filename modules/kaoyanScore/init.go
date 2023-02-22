@@ -38,7 +38,8 @@ type mConfig struct {
 	adminList      []int64 // 管理员列表, 目前有问题，所有群的管理混在一起了
 	tailMsg        string  // 尾部消息（可以放实验室宣传语什么的）
 	webserver      webserver
-	displayPicture bool // 是否将分析结果转换为图片发到群里（和webserver可以同时开启）
+	displayPicture bool   // 是否将分析结果转换为图片发到群里（和webserver可以同时开启）
+	fontPath       string // 字体文件路径
 }
 
 // 注，如果 localPort 和 remoteURL 都不配置，则机器人不会向用户展示网址版数据
@@ -69,6 +70,7 @@ func (m *kaoyanScore) HotReload() {
 	m.webserver.remoteURL = bot.GetModConfigString(m, "webserver.remoteURL")
 	m.webserver.displayURL = bot.GetModConfigString(m, "webserver.displayURL")
 	m.displayPicture = bot.GetModConfigBool(m, "displayPicture")
+	m.fontPath = bot.GetModConfigString(m, "fontPath")
 }
 
 func (m *kaoyanScore) PostInit() {
@@ -93,20 +95,22 @@ func (m *kaoyanScore) Serve(c *bot.Bot) {
 
 	c.OnGroupMsgAuth(m.AnalyseByGroupTrigger, filters...)
 
-	m.cron.AddFunc("@every 10m", func() {
+	if _, err := m.cron.AddFunc("@every 10m", func() {
 		m.AnalyseAndSave(c.QQClient)
-	})
+	}); err != nil {
+		logger.Errorf("failed to start cron, %v", err)
+		return
+	}
 	m.cron.Start()
-
 }
 
-func (m *kaoyanScore) Start(c *bot.Bot) {
+func (m *kaoyanScore) Start(_ *bot.Bot) {
 	// 在本地启动一个服务器，用于展示统计结果
 	if m.webserver.localPort != "" {
 		RunServer(fmt.Sprintf(":%s", m.webserver.localPort), &msgFinalMap)
 	}
 }
 
-func (m *kaoyanScore) Stop(c *bot.Bot, wg *sync.WaitGroup) {
+func (m *kaoyanScore) Stop(_ *bot.Bot, wg *sync.WaitGroup) {
 	defer wg.Done()
 }

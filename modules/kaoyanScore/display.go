@@ -27,7 +27,7 @@ func (m *kaoyanScore) AnalyseByGroupTrigger(c *client.QQClient, msg *message.Gro
 	m.sendWebserverMsgToGroup(c, msg.GroupCode)
 	// 发送成绩的图片消息
 	if scoreAnalyse, ok := msgFinalMap.Load(msg.GroupCode); ok {
-		sendGroupImgMsgFromStr(c, msg.GroupCode, scoreAnalyse.(string))
+		m.sendGroupImgMsgFromStr(c, msg.GroupCode, scoreAnalyse.(string))
 	}
 }
 
@@ -42,9 +42,9 @@ func (m *kaoyanScore) sendWebserverMsgToGroup(c *client.QQClient, groupCode int6
 	c.SendGroupMessage(groupCode, groupMsg)
 }
 
-func sendGroupImgMsgFromStr(c *client.QQClient, groupCode int64, msg string) {
+func (m *kaoyanScore) sendGroupImgMsgFromStr(c *client.QQClient, groupCode int64, msg string) {
 	var buf bytes.Buffer
-	err := utils.String2PicWriter(msg, &buf)
+	err := utils.String2PicWriter(msg, m.fontPath, &buf)
 
 	reader := bytes.NewReader(buf.Bytes())
 	source := message.Source{
