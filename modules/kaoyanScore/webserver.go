@@ -2,20 +2,32 @@ package kaoyanScore
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"strconv"
+	"sync"
+
+	"github.com/gin-gonic/gin"
 )
 
 type server struct {
 	engine *gin.Engine
 }
 
-func runGin() {
+// RunServer 运行一个local webserver，展示考研信息
+func RunServer(addr string, msgFinalMap *sync.Map) {
 	s := &server{
 		engine: gin.Default(),
 	}
 	s.engine.Use()
-	s.engine.GET("/score", func(c *gin.Context) {
+	s.engine.GET("", get(msgFinalMap))
+
+	err := s.engine.Run(addr)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func get(msgFinalMap *sync.Map) gin.HandlerFunc {
+	return func(c *gin.Context) {
 		group := c.DefaultQuery("group", "")
 		if group == "" {
 			c.JSON(200, gin.H{
@@ -43,10 +55,5 @@ func runGin() {
 			})
 			return
 		}
-	})
-
-	err := s.engine.Run(":8090")
-	if err != nil {
-		panic(err)
 	}
 }

@@ -1,11 +1,13 @@
 package pong
 
 import (
-	"bird_qq_bot/bot"
-	"github.com/Mrs4s/MiraiGo/client"
-	"github.com/Mrs4s/MiraiGo/message"
 	"sync"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/client"
+	"github.com/Mrs4s/MiraiGo/message"
+
+	"bird_qq_bot/bot"
 )
 
 func init() {

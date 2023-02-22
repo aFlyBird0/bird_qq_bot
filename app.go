@@ -1,12 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
-
-	"github.com/Mrs4s/MiraiGo/client"
-	"github.com/Mrs4s/MiraiGo/message"
 
 	"bird_qq_bot/bot"
 	"bird_qq_bot/utils"
@@ -49,10 +45,6 @@ func main() {
 
 	// 刷新好友列表，群列表
 	bot.RefreshList()
-
-	bot.Instance.GroupMessageEvent.Subscribe(func(client *client.QQClient, event *message.GroupMessage) {
-		fmt.Printf("收到群聊信息：%v", event)
-	})
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt)

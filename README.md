@@ -18,6 +18,29 @@
 ### 考研分数段统计
 根据群名片统计各分数段人数，支持多群统计、自定义规则（需要简单改代码）。
 
+统计结果展示方式：
+* 图片：把统计结果转成图片后发到群里
+* 文字（webserver）
+  * localServer：在部署机器人的服务器上启动一个 web 服务，把统计结果以网址的形式发到群里
+  * remoteServer：把统计信息推送到远程服务器上（见Remote-Webserver 部署），把统计结果以网址的形式发到群里
+
+#### Remote-Webserver 部署（可选）
+
+本地平台编译：
+```go
+go build -o webserver sidecar/webserver/main.go
+./webserver -port 8090
+```
+
+
+macOS 平台交叉编译二进制：
+```go
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64  go build -o webserver sidecar/webserver/main.go
+./webserver -port 8090
+```
+
+todo: 直接用 CI 和 goreleaser 编译二进制文件
+
 ### 土味情话
 群内发送「宝贝」，即可获得一个随机土味情话。单身狗过节神器。
 

@@ -1,12 +1,15 @@
 package kaoyanScore
 
 import (
-	"bird_qq_bot/bot"
-	"bird_qq_bot/utils"
-	"github.com/robfig/cron/v3"
-	"github.com/sirupsen/logrus"
+	"fmt"
 	"sync"
 	"time"
+
+	"github.com/robfig/cron/v3"
+	"github.com/sirupsen/logrus"
+
+	"bird_qq_bot/bot"
+	"bird_qq_bot/utils"
 )
 
 // 考研分数统计
@@ -33,7 +36,16 @@ type mConfig struct {
 	triggers       []string
 	AllowGroupList []int64 // 开启的群号列表
 	adminList      []int64 // 管理员列表, 目前有问题，所有群的管理混在一起了
-	tailMsg        string  // 尾部消息（实验室宣传语）
+	tailMsg        string  // 尾部消息（可以放实验室宣传语什么的）
+	webserver      webserver
+	displayPicture bool // 是否将分析结果转换为图片发到群里（和webserver可以同时开启）
+}
+
+// 注，如果 localPort 和 remoteURL 都不配置，则机器人不会向用户展示网址版数据
+type webserver struct {
+	localPort  string // 本地端口
+	remoteURL  string // 远程webserver地址
+	displayURL string // 显示在QQ机器人的消息中的webserver地址，应为配好反代后的地址
 }
 
 func (m *kaoyanScore) GetModuleInfo() bot.ModuleInfo {
@@ -53,6 +65,10 @@ func (m *kaoyanScore) HotReload() {
 	m.AllowGroupList = bot.GetModConfigInt64Slice(m, "allowGroupList")
 	m.triggers = bot.GetModConfigStringSlice(m, "triggers")
 	m.tailMsg = bot.GetModConfigString(m, "tailMsg")
+	m.webserver.localPort = bot.GetModConfigString(m, "webserver.localPort")
+	m.webserver.remoteURL = bot.GetModConfigString(m, "webserver.remoteURL")
+	m.webserver.displayURL = bot.GetModConfigString(m, "webserver.displayURL")
+	m.displayPicture = bot.GetModConfigBool(m, "displayPicture")
 }
 
 func (m *kaoyanScore) PostInit() {
@@ -74,16 +90,21 @@ func (m *kaoyanScore) Serve(c *bot.Bot) {
 	filters = append(filters, &bot.GroupAllowMsgF{Allows: m.triggers})
 	filters = append(filters, &bot.GroupAllowGroupCodeF{Allows: m.AllowGroupList})
 	//filters = append(filters, &bot.GroupAllowUinF{Allows: m.adminList})
-	c.OnGroupMsgAuth(m.CalculateByGroupTrigger, filters...)
+
+	c.OnGroupMsgAuth(m.AnalyseByGroupTrigger, filters...)
+
 	m.cron.AddFunc("@every 10m", func() {
-		m.CalculateAndSave(c.QQClient)
+		m.AnalyseAndSave(c.QQClient)
 	})
 	m.cron.Start()
 
 }
 
 func (m *kaoyanScore) Start(c *bot.Bot) {
-	runGin()
+	// 在本地启动一个服务器，用于展示统计结果
+	if m.webserver.localPort != "" {
+		RunServer(fmt.Sprintf(":%s", m.webserver.localPort), &msgFinalMap)
+	}
 }
 
 func (m *kaoyanScore) Stop(c *bot.Bot, wg *sync.WaitGroup) {
