@@ -10,7 +10,6 @@ import (
 	"github.com/parnurzeal/gorequest"
 	"github.com/sirupsen/logrus"
 
-	"bird_qq_bot/bot"
 	"bird_qq_bot/utils"
 )
 
@@ -66,19 +65,23 @@ func (m *kaoyanScore) AnalyseAndSave(c *client.QQClient) {
 		updateTimeStr := m.lastUpdateTime.Format("2006-01-02 15:04:05")
 		scoreAnalyseMsg := "最后更新于:" + updateTimeStr + "\n\n" + msg
 		// 本地服务器和远程服务器都存一份
+		m.saveGroupScoreToLocalWebServer(group, scoreAnalyseMsg)
 		m.saveGroupScoreToRemoteWebServer(group, scoreAnalyseMsg)
 	}
 }
 
-func (m *kaoyanScore) saveGroupScoreToRemoteWebServer(groupCode int64, msg string) {
+func (m *kaoyanScore) saveGroupScoreToLocalWebServer(groupCode int64, msg string) {
 	msgFinalMap.Store(groupCode, msg)
-	host := bot.GetModConfigString(m, "remoteHost")
-	if host != "" {
-		if _, _, errs := gorequest.New().Post(host).Send(map[string]any{
+}
+
+func (m *kaoyanScore) saveGroupScoreToRemoteWebServer(groupCode int64, msg string) {
+	url := m.webserver.remoteURL
+	if url != "" {
+		if _, _, errs := gorequest.New().Post(url).Send(map[string]any{
 			"group": groupCode,
 			"msg":   msg,
 		}).End(); errs != nil {
-			logger.Errorf("保存考研分数到远程服务器<%s>失败: %+v\n", host, errs)
+			logger.Errorf("保存考研分数到远程服务器<%s>失败: %+v\n", url, errs)
 		}
 	}
 }
