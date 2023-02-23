@@ -49,7 +49,7 @@ func (m *kaoyanScore) generateScoreAnalyse(c *client.QQClient) map[groupCode]str
 			}
 		}
 		msg1 += "\n\n以上结果通过群名片分析而得，存在一定误差，仅供参考。\n"
-		msg1 += m.tailMsg + "\n"
+		//msg1 += m.headMsgInWebserver + "\n"
 		logger.Info("拼接得到的考研分数排名:\n %v\n", msg1)
 
 		// 发送某些过密分数段分布详情

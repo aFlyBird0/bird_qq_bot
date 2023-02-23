@@ -33,13 +33,15 @@ type kaoyanScore struct {
 }
 
 type mConfig struct {
-	triggers       []string
-	AllowGroupList []int64 // 开启的群号列表
-	adminList      []int64 // 管理员列表, 目前有问题，所有群的管理混在一起了
-	tailMsg        string  // 尾部消息（可以放实验室宣传语什么的）
-	webserver      webserver
-	displayPicture bool   // 是否将分析结果转换为图片发到群里（和webserver可以同时开启）
-	fontPath       string // 字体文件路径
+	triggers             []string
+	AllowGroupList       []int64 // 开启的群号列表
+	adminList            []int64 // 管理员列表, 目前有问题，所有群的管理混在一起了
+	webserver            webserver
+	displayPicture       bool   // 是否将分析结果转换为图片发到群里（和webserver可以同时开启）
+	tailPictureInPicture string // # 缀在分析结果图片后面的图片，可以放群二维码，留空则不缀图
+	fontPath             string // 字体文件路径
+	headMsgInWebserver   string // 在详细的统计信息后面附加的内容（位于分数段总体统计和过密分数段分析之间）
+	tailMsgAfterURL      string // 在网址消息后面附加的内容
 }
 
 // 注，如果 localPort 和 remoteURL 都不配置，则机器人不会向用户展示网址版数据
@@ -65,12 +67,14 @@ func (m *kaoyanScore) Init() {
 func (m *kaoyanScore) HotReload() {
 	m.AllowGroupList = bot.GetModConfigInt64Slice(m, "allowGroupList")
 	m.triggers = bot.GetModConfigStringSlice(m, "triggers")
-	m.tailMsg = bot.GetModConfigString(m, "tailMsg")
-	m.webserver.localPort = bot.GetModConfigString(m, "webserver.localPort")
 	m.webserver.remoteURL = bot.GetModConfigString(m, "webserver.remoteURL")
 	m.webserver.displayURL = bot.GetModConfigString(m, "webserver.displayURL")
 	m.displayPicture = bot.GetModConfigBool(m, "displayPicture")
+	m.tailPictureInPicture = bot.GetModConfigString(m, "tailPictureInPicture")
 	m.fontPath = bot.GetModConfigString(m, "fontPath")
+	m.webserver.localPort = bot.GetModConfigString(m, "webserver.localPort")
+	m.headMsgInWebserver = bot.GetModConfigString(m, "headMsgInWebserver")
+	m.tailMsgAfterURL = bot.GetModConfigString(m, "tailMsgAfterURL")
 }
 
 func (m *kaoyanScore) PostInit() {

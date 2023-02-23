@@ -3,6 +3,8 @@ package kaoyanScore
 import (
 	"bytes"
 	"fmt"
+	"image"
+	"os"
 	"time"
 
 	"github.com/Mrs4s/MiraiGo/client"
@@ -38,13 +40,42 @@ func (m *kaoyanScore) sendWebserverMsgToGroup(c *client.QQClient, groupCode int6
 	url := fmt.Sprintf("%s?group=%v", m.webserver.displayURL, groupCode)
 	hint := "分数如下，每10分钟自动更新，每次发送关键词立即更新: "
 	groupMsg := &message.SendingMessage{}
-	groupMsg.Append(message.NewText(hint + url))
+	var msg string
+	if m.tailMsgAfterURL != "" {
+		msg = hint + url + "\n" + m.tailMsgAfterURL
+	} else {
+		msg = hint + url
+	}
+	groupMsg.Append(message.NewText(msg))
 	c.SendGroupMessage(groupCode, groupMsg)
 }
 
 func (m *kaoyanScore) sendGroupImgMsgFromStr(c *client.QQClient, groupCode int64, msg string) {
 	var buf bytes.Buffer
-	err := utils.String2PicWriter(msg, m.fontPath, &buf)
+	var tailPicture image.Image
+	if m.tailPictureInPicture != "" {
+		f, err := os.Open(m.tailPictureInPicture)
+		defer f.Close()
+		if err != nil {
+			logrus.WithError(err).Error("open tail picture failed")
+		} else {
+			tailPicture, _, err = image.Decode(f)
+			if err != nil {
+				logrus.WithError(err).Error("decode tail picture failed")
+			}
+		}
+	}
+	if tailPicture != nil {
+		err := utils.String2PicWriterWithTailPicture(msg, m.fontPath, &buf, tailPicture)
+		if err != nil {
+			logrus.WithError(err).Error("write pic with tail picture failed")
+		}
+	} else {
+		err := utils.String2PicWriter(msg, m.fontPath, &buf)
+		if err != nil {
+			logrus.WithError(err).Error("write pic failed")
+		}
+	}
 
 	reader := bytes.NewReader(buf.Bytes())
 	source := message.Source{
@@ -63,7 +94,7 @@ func (m *kaoyanScore) AnalyseAndSave(c *client.QQClient) {
 	m.lastUpdateTime = time.Now()
 	for group, msg := range m.generateScoreAnalyse(c) {
 		updateTimeStr := m.lastUpdateTime.Format("2006-01-02 15:04:05")
-		scoreAnalyseMsg := "最后更新于:" + updateTimeStr + "\n\n" + msg
+		scoreAnalyseMsg := "最后更新于:" + updateTimeStr + "\n\n" + m.headMsgInWebserver + "\n\n" + msg
 		// 本地服务器和远程服务器都存一份
 		m.saveGroupScoreToLocalWebServer(group, scoreAnalyseMsg)
 		m.saveGroupScoreToRemoteWebServer(group, scoreAnalyseMsg)
