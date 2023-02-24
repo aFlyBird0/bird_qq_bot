@@ -28,8 +28,9 @@ var msgFinalMap sync.Map
 
 type kaoyanScore struct {
 	mConfig
-	lastUpdateTime time.Time
-	cron           *cron.Cron //
+	lastUpdateTime     time.Time
+	lastTriggerTimeMap map[int64]time.Time // 每个群最后一次主动触发时间，用来限流
+	cron               *cron.Cron
 }
 
 type mConfig struct {
@@ -65,6 +66,8 @@ func (m *kaoyanScore) Init() {
 }
 
 func (m *kaoyanScore) HotReload() {
+	m.lastTriggerTimeMap = make(map[int64]time.Time)
+
 	m.AllowGroupList = bot.GetModConfigInt64Slice(m, "allowGroupList")
 	m.triggers = bot.GetModConfigStringSlice(m, "triggers")
 	m.webserver.remoteURL = bot.GetModConfigString(m, "webserver.remoteURL")

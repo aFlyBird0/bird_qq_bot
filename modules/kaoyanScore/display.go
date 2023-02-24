@@ -16,13 +16,14 @@ import (
 )
 
 func (m *kaoyanScore) AnalyseByGroupTrigger(c *client.QQClient, msg *message.GroupMessage) {
-	if time.Now().Sub(m.lastUpdateTime) < 15*time.Second {
+	if time.Now().Sub(m.lastTriggerTimeMap[msg.GroupCode]) < 15*time.Second {
 		tooOftenHint := "查询太频繁啦！"
 		groupMsg := &message.SendingMessage{}
 		groupMsg.Append(message.NewText(tooOftenHint))
 		c.SendGroupMessage(msg.GroupCode, groupMsg)
 		return
 	}
+	m.lastTriggerTimeMap[msg.GroupCode] = time.Now()
 	// 分析和存储成绩
 	m.AnalyseAndSave(c)
 	// 发送成绩的webserver消息
@@ -108,7 +109,8 @@ func (m *kaoyanScore) saveGroupScoreToLocalWebServer(groupCode int64, msg string
 func (m *kaoyanScore) saveGroupScoreToRemoteWebServer(groupCode int64, msg string) {
 	url := m.webserver.remoteURL
 	if url != "" {
-		if _, _, errs := gorequest.New().Post(url).Send(map[string]any{
+		if _, _, errs := gorequest.New().Timeout(5 * time.Second).
+			Post(url).Send(map[string]any{
 			"group": groupCode,
 			"msg":   msg,
 		}).End(); errs != nil {
