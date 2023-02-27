@@ -109,11 +109,14 @@ func (m *kaoyanScore) saveGroupScoreToLocalWebServer(groupCode int64, msg string
 func (m *kaoyanScore) saveGroupScoreToRemoteWebServer(groupCode int64, msg string) {
 	url := m.webserver.remoteURL
 	if url != "" {
-		if _, _, errs := gorequest.New().Timeout(5 * time.Second).
-			Post(url).Send(map[string]any{
-			"group": groupCode,
-			"msg":   msg,
-		}).End(); errs != nil {
+		if _, _, errs := gorequest.New().
+			Retry(3, 5*time.Second).
+			Timeout(15 * time.Second).
+			Post(url).
+			Send(map[string]any{
+				"group": groupCode,
+				"msg":   msg,
+			}).End(); errs != nil {
 			logger.Errorf("保存考研分数到远程服务器<%s>失败: %+v\n", url, errs)
 		}
 	}

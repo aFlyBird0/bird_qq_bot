@@ -52,6 +52,7 @@ modules:
       night: ["晚安"]  # 晚安
       dog: ["舔狗日记"] # 舔狗日记
       healthTip: ["健康小贴士"] #健康小贴士
+      saylove: ["土味情话"] #土味情话
   bird.randAt: # 随机@模块
     triggers: ["开枪", "随机@"]
   bird.kaoyanScore: # 考研分数统计模块

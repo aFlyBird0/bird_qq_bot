@@ -1,14 +1,16 @@
 package tianXing
 
 import (
-	"bird_qq_bot/bot"
-	"bird_qq_bot/utils"
 	"fmt"
+	"strings"
+	"sync"
+
 	"github.com/Mrs4s/MiraiGo/client"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/sirupsen/logrus"
-	"strings"
-	"sync"
+
+	"bird_qq_bot/bot"
+	"bird_qq_bot/utils"
 )
 
 func init() {
@@ -31,6 +33,7 @@ type mConfig struct {
 	tianGouTriggers   []string
 	morningTriggers   []string
 	healthTipTriggers []string
+	sayloveTriggers   []string
 }
 
 type msgHandle func(msg *string)
@@ -41,6 +44,7 @@ func (g *tianXing) HotReload() {
 	g.tianGouTriggers = bot.GetModConfigStringSlice(g, "triggers.dog")
 	g.morningTriggers = bot.GetModConfigStringSlice(g, "triggers.morning")
 	g.healthTipTriggers = bot.GetModConfigStringSlice(g, "triggers.healthTip")
+	g.sayloveTriggers = bot.GetModConfigStringSlice(g, "triggers.saylove")
 }
 
 func (g *tianXing) GetModuleInfo() bot.ModuleInfo {
@@ -62,6 +66,7 @@ func (g *tianXing) Serve(b *bot.Bot) {
 	b.OnGroupMsgAuth(g.sendTianGouMsg(), &bot.GroupAllowMsgF{Allows: g.tianGouTriggers})
 	b.OnGroupMsgAuth(g.sendMorningMsg(), &bot.GroupAllowMsgF{Allows: g.morningTriggers})
 	b.OnGroupMsgAuth(g.sendHealthTipMsg(), &bot.GroupAllowMsgF{Allows: g.healthTipTriggers})
+	b.OnGroupMsgAuth(g.sendSayloveMsg(), &bot.GroupAllowMsgF{Allows: g.sayloveTriggers})
 }
 
 func (g *tianXing) Start(b *bot.Bot) {
@@ -85,6 +90,10 @@ func (g *tianXing) sendMorningMsg() func(qqClient *client.QQClient, m *message.G
 
 func (g *tianXing) sendHealthTipMsg() func(qqClient *client.QQClient, m *message.GroupMessage) {
 	return g.msgFromTianXing(healthTipAPI)
+}
+
+func (g *tianXing) sendSayloveMsg() func(qqClient *client.QQClient, m *message.GroupMessage) {
+	return g.msgFromTianXing(sayloveAPI)
 }
 
 func (g *tianXing) msgFromTianXing(api API, handlers ...msgHandle) func(qqClient *client.QQClient, m *message.GroupMessage) {

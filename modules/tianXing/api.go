@@ -2,8 +2,9 @@ package tianXing
 
 import (
 	"fmt"
-	"github.com/parnurzeal/gorequest"
 	"time"
+
+	"github.com/parnurzeal/gorequest"
 )
 
 const (
@@ -44,6 +45,10 @@ var (
 	healthTipAPI = API{
 		URL:  buildUrl("healthtip"),
 		Name: "健康小贴士",
+	}
+	sayloveAPI = API{
+		URL:  buildUrl("saylove"),
+		Name: "土味情话",
 	}
 )
 

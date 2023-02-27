@@ -3,6 +3,8 @@ package kaoyanScore
 import (
 	"fmt"
 
+	"golang.org/x/exp/constraints"
+
 	"github.com/Mrs4s/MiraiGo/client"
 )
 
@@ -10,6 +12,7 @@ type groupCode = int64
 
 // generateScoreAnalyse 生成消息段分析结果
 func (m *kaoyanScore) generateScoreAnalyse(c *client.QQClient) map[groupCode]string {
+	// todo: 重构，不是一下子返回整个消息，而是返回关键的数据结构，再用tpl渲染
 	if err := c.ReloadGroupList(); err != nil {
 		logger.Error("ReloadGroupList error: %v\n", err)
 	}
@@ -34,13 +37,31 @@ func (m *kaoyanScore) generateScoreAnalyse(c *client.QQClient) map[groupCode]str
 			GroupCodeScoreMap[filter] = GroupScoresEachTen(scores)
 		}
 		msg1 := "---考研分数段统计来啦！---\n\n"
+		scoresTotal := 0
+		for _, filter := range filters {
+			if scoreGroups, ok := GroupCodeScoreMap[filter]; ok {
+				for _, v := range scoreGroups {
+					scoresTotal += v.Len()
+				}
+			}
+		}
+		msg1 += fmt.Sprintf("所有专业一共统计到%v个分数\n\n", scoresTotal)
 		for _, filter := range filters {
 			if scoreGroups, ok := GroupCodeScoreMap[filter]; ok {
 				counts := 0
+				scoreSum := 0
+				scoresFlat := make([]float32, 0)
 				for _, v := range scoreGroups {
 					counts += v.Len()
+					for _, score := range v.scores {
+						scoreSum += score
+						scoresFlat = append(scoresFlat, float32(score))
+					}
 				}
-				msg1 += fmt.Sprintf("%s(共%v个分数)\n", filter.Name(), counts)
+				avg := float32(scoreSum) / float32(counts)
+				mid := getMidNum(scoresFlat)
+
+				msg1 += fmt.Sprintf("%s(共%v个分数，均分%.2f, 中位数%.1f)\n", filter.Name(), counts, avg, mid)
 				sum := 0 // 每段依次累加人数
 				for _, scoreGroup := range scoreGroups {
 					sum += scoreGroup.Len()
@@ -86,4 +107,15 @@ func (m *kaoyanScore) generateScoreAnalyse(c *client.QQClient) map[groupCode]str
 	}
 
 	return result
+}
+
+// 从给定的增序的数组中求中位数
+func getMidNum[T constraints.Float | constraints.Integer](nums []T) T {
+	if len(nums) == 0 {
+		return 0
+	}
+	if len(nums)%2 == 0 {
+		return (nums[len(nums)/2-1] + nums[len(nums)/2]) / 2
+	}
+	return nums[len(nums)/2]
 }
