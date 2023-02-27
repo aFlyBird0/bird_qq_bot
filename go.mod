@@ -6,7 +6,7 @@ require (
 	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 	github.com/Mrs4s/MiraiGo v0.0.0-20221102071937-64722799b7ab
 	github.com/fogleman/gg v1.3.0
-	github.com/fsnotify/fsnotify v1.5.1
+	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
