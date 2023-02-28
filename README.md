@@ -5,14 +5,20 @@
 项目基于 [Logiase/MiraiGo-Template: A template for MiraiGo](https://github.com/Logiase/MiraiGo-Template) 二次开发。
 
 ## 快速开始
-把 [application.example.yaml](./application.example.yaml) 复制一份，并重命名为 `application.yaml`，
 
-两种登录方式：
+1. 下载
+去 [release页](https://github.com/aFlyBird0/bird_qq_bot/releases) 下载对应的二进制文件(bird_qq_bot开头)，和配置文件 application.example.yaml，并重命名为 `application.yaml`，
 
-1. 扫码登录，`bot.login-method` 填 `qrcode`。然后程序会在启动时，同时在终端中打印出二维码与在当前目录生成 `qrcode.png` 文件，用手机扫码登录即可。
-2. 账号密码登录，`bot.login-method` 填 `common`，并填写 `bot.account` 和 `bot.password`。
+2. 修改配置
+修改配置文件，其中最前面的 `bot` 部分是机器人的配置，有两种登录方式：
+
+   1. 扫码登录，`bot.login-method` 填 `qrcode`。然后程序会在启动时，同时在终端中打印出二维码与在当前目录生成 `qrcode.png` 文件，用手机扫码登录即可。
+   2. 账号密码登录，`bot.login-method` 填 `common`，并填写 `bot.account` 和 `bot.password`。
 
 注：很可能会触发QQ风控，比如密码登录会提示需要滑块验证，这时候就会自动转成扫码登录，同时扫码登录要求扫码的手机和运行QQ机器人的服务器在同一网络环境在。
+
+3. 运行
+直接运行二进制文件即可。
 
 ## 现有功能
 ### 群复读撤回
@@ -34,20 +40,14 @@
 
 #### Remote-Webserver 部署（可选）
 
-本地平台编译：
-```go
-go build -o webserver sidecar/webserver/main.go
+为什么需要 remoteServer？因为 localServer 运行在部署机器人的服务器上，如果机器人部署在内网，而统计结果肯定是需要做到外网访问，但如果部署机器人的网络环境又不允许使用内网穿透，就需要 remoteServer。
+
+去 [release页](https://github.com/aFlyBird0/bird_qq_bot/releases) 下载对应的二进制文件(webserver开头)，运行：
+
+```shell
+# 为了演示方便，这里将二进制重命名为webserver
 ./webserver -port 8090
 ```
-
-
-macOS 平台交叉编译二进制：
-```go
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64  go build -o webserver sidecar/webserver/main.go
-./webserver -port 8090
-```
-
-todo: 直接用 CI 和 goreleaser 编译二进制文件
 
 ### 土味情话
 群内发送「宝贝」，即可获得一个随机土味情话。单身狗过节神器。
