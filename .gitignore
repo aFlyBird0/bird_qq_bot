@@ -9,3 +9,7 @@ target/
 
 *.png
 
+dist/
+
+bird_qq_bot
+webserver

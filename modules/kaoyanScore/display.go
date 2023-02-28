@@ -51,6 +51,7 @@ func (m *kaoyanScore) sendWebserverMsgToGroup(c *client.QQClient, groupCode int6
 	c.SendGroupMessage(groupCode, groupMsg)
 }
 
+// 把字符串消息转成图片发出去
 func (m *kaoyanScore) sendGroupImgMsgFromStr(c *client.QQClient, groupCode int64, msg string) {
 	var buf bytes.Buffer
 	var tailPicture image.Image

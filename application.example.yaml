@@ -59,7 +59,7 @@ modules:
     triggers: [ "分数实时排名", ":score", "：score" ]  # 主动触发排名计算
     displayPicture: true  # 是否将分析结果转换为图片发到群里（和webserver可以同时开启）
     tailPictureInPicture: "" # 缀在分析结果图片后面的图片，可以放群二维码，留空则不缀图。不要取名为 qr_code.png，会覆盖机器人登录二维码
-    fontPath: "DingTalk JinBuTi.ttf" # 字体文件路径，用于生成图片
+    fontPath: "DingTalk JinBuTi.ttf" # 字体文件路径，用于生成图片，ttf格式
     webserver: # 考研分数模块，利用一个webserver来存储、展示数据
       # 如果在本地直接起一个webserver，配置这里，否则留空
       localPort: 8091

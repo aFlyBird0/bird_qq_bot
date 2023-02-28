@@ -6,7 +6,13 @@
 
 ## 快速开始
 把 [application.example.yaml](./application.example.yaml) 复制一份，并重命名为 `application.yaml`，
-填写账号密码，运行即可。
+
+两种登录方式：
+
+1. 扫码登录，`bot.login-method` 填 `qrcode`。然后程序会在启动时，同时在终端中打印出二维码与在当前目录生成 `qrcode.png` 文件，用手机扫码登录即可。
+2. 账号密码登录，`bot.login-method` 填 `common`，并填写 `bot.account` 和 `bot.password`。
+
+注：很可能会触发QQ风控，比如密码登录会提示需要滑块验证，这时候就会自动转成扫码登录，同时扫码登录要求扫码的手机和运行QQ机器人的服务器在同一网络环境在。
 
 ## 现有功能
 ### 群复读撤回
@@ -23,6 +29,8 @@
 * 文字（webserver）
   * localServer：在部署机器人的服务器上启动一个 web 服务，把统计结果以网址的形式发到群里
   * remoteServer：把统计信息推送到远程服务器上（见Remote-Webserver 部署），把统计结果以网址的形式发到群里
+
+详细配置见配置文件。
 
 #### Remote-Webserver 部署（可选）
 
